@@ -96,6 +96,25 @@ export const dataService = {
   },
 
   /**
+   * Actualizar categoria de estudio
+   */
+  async updateCategory(
+    category_id: string,
+    formData: FormData,
+  ): Promise<{detail: string; study_id: string}> {
+    const response = await apiClient.put(
+      `/studies/admin/update_study_category/${category_id}`,
+      formData,
+      {
+        withCredentials: true,
+        headers: {"Content-Type": "multipart/form-data"},
+      },
+    );
+
+    return response.data;
+  },
+
+  /**
    * Eliminar categoria de estudio
    */
   async deleteCategory(category_id: string): Promise<any> {
