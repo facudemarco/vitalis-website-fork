@@ -34,6 +34,7 @@ export interface StudiesCategory {
   name: string;
   image: string;
   url_image?: string;
+  requires_report?: boolean;
   id?: string;
 }
 
@@ -45,6 +46,7 @@ export interface StudyFile {
   mime_type: string;
   size_bytes: number;
   uploaded_at: string;
+  is_report?: boolean;
 }
 
 export interface Studies {
@@ -56,6 +58,7 @@ export interface Studies {
   created_at?: string;
   status: string;
   study_file?: string;
+  requires_report?: boolean;
   files?: StudyFile[];
 }
 
