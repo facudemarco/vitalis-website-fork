@@ -201,8 +201,6 @@ export default function EstudiosCard({studies}: {studies: Studies}) {
                 )}
               </div>
             )}
-              </div>
-            )}
 
             {/* Pending status view for staff */}
             {(userData?.role === "professional" ||
