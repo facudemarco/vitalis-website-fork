@@ -146,9 +146,10 @@ export const dataService = {
   /**
    * Agregar un archivo a un estudio existente (e.g. un informe)
    */
-  async uploadStudyFile(studyId: string, file: File): Promise<any> {
+  async uploadStudyFile(studyId: string, file: File, isReport = false): Promise<any> {
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("is_report", String(isReport));
 
     const response = await apiClient.post(`/studies/${studyId}/files`, formData, {
       withCredentials: true,

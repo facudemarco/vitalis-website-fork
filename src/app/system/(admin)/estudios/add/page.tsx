@@ -16,6 +16,7 @@ export default function AddCategoryPage() {
     defaultValues: {
       name: "",
       image: "",
+      requires_report: true,
     },
   });
 
@@ -24,6 +25,7 @@ export default function AddCategoryPage() {
       const fd = new FormData();
 
       fd.append("name", data.name);
+      fd.append("requires_report", String(data.requires_report));
       fd.append("image", data.image[0]); // File real
 
       await dataService.createCategory(fd);
@@ -54,6 +56,15 @@ export default function AddCategoryPage() {
           type="text"
           {...register("name")}
         />
+        <label className="mt-3 flex cursor-pointer items-center gap-3" htmlFor="requires_report">
+          <input
+            className="h-4 w-4"
+            id="requires_report"
+            type="checkbox"
+            {...register("requires_report")}
+          />
+          <span>Exigir un informe para confirmar este estudio</span>
+        </label>
         <label htmlFor="url_image">Imagen del estudio *</label>
         <input
           required

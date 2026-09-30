@@ -88,7 +88,7 @@ export default function EstudiosCard({studies}: {studies: Studies}) {
     setUploading(true);
     try {
       // 1. Subir el archivo de informe usando el endpoint existente
-      await dataService.uploadStudyFile(studies.id, fileToUpload);
+      await dataService.uploadStudyFile(studies.id, fileToUpload, true);
       // 2. Cambiar el estado del estudio a "Disponible"
       await dataService.changeStudyStatus(studies.id, {
         status: "Disponible",
@@ -97,6 +97,23 @@ export default function EstudiosCard({studies}: {studies: Studies}) {
       alert("Informe cargado y estudio confirmado correctamente.");
       setShowUploadModal(false);
       setSelectedFile(null);
+      window.location.reload();
+    } catch (error) {
+      console.error("Error al confirmar el estudio:", error);
+      alert("Ocurrió un error al confirmar el estudio. Por favor intenta nuevamente.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleConfirmWithoutReport = async () => {
+    setUploading(true);
+    try {
+      await dataService.changeStudyStatus(studies.id, {
+        status: "Disponible",
+        study_type: studies.study_type,
+      });
+      alert("Estudio confirmado correctamente.");
       window.location.reload();
     } catch (error) {
       console.error("Error al confirmar el estudio:", error);
@@ -118,6 +135,8 @@ export default function EstudiosCard({studies}: {studies: Studies}) {
   };
 
   const files = studies.files || [];
+  const studyFiles = files.filter((file) => !file.is_report);
+  const reportFiles = files.filter((file) => file.is_report);
 
   return (
     <>
@@ -151,43 +170,31 @@ export default function EstudiosCard({studies}: {studies: Studies}) {
             {/* Render download options if Available */}
             {studies.status === "Disponible" && (
               <div className="flex w-full flex-col items-start gap-1">
-                {files.length > 1 ? (
-                  <>
-                    {files.slice(0, -1).map((f, i) => (
-                      <button
-                        key={f.id}
-                        className="block cursor-pointer text-left underline"
-                        onClick={() => downloadFile(f.file_path, f.original_filename)}
-                      >
-                        Descargar Estudio {files.slice(0, -1).length > 1 ? `#${i + 1}` : ""} (
-                        {f.original_filename})
-                      </button>
-                    ))}
-                    <hr className="my-1 w-full border-white/25" />
-                    <button
-                      className="block cursor-pointer text-left font-semibold text-green-300 underline"
-                      onClick={() =>
-                        downloadFile(
-                          files[files.length - 1].file_path,
-                          files[files.length - 1].original_filename,
-                        )
-                      }
-                    >
-                      Descargar Informe ({files[files.length - 1].original_filename})
-                    </button>
-                  </>
-                ) : files.length === 1 ? (
+                {studyFiles.map((file, index) => (
                   <button
+                    key={file.id}
                     className="block cursor-pointer text-left underline"
-                    onClick={() => downloadFile(files[0].file_path, files[0].original_filename)}
+                    onClick={() => downloadFile(file.file_path, file.original_filename)}
                   >
-                    Descargar Estudio ({files[0].original_filename})
+                    Descargar Estudio {studyFiles.length > 1 ? `#${index + 1}` : ""} (
+                    {file.original_filename})
                   </button>
-                ) : studies.study_type === "Consentimiento informado" ? (
+                ))}
+                {reportFiles.map((file) => (
+                  <button
+                    key={file.id}
+                    className="block cursor-pointer text-left font-semibold text-green-300 underline"
+                    onClick={() => downloadFile(file.file_path, file.original_filename)}
+                  >
+                    Descargar Informe ({file.original_filename})
+                  </button>
+                ))}
+                {files.length === 0 && studies.study_type === "Consentimiento informado" && (
                   <p className="text-sm text-amber-200">
                     Este consentimiento todavía no tiene un PDF adjunto.
                   </p>
-                ) : (
+                )}
+                {files.length === 0 && studies.study_type !== "Consentimiento informado" && (
                   <button className="cursor-pointer underline" onClick={() => void downloadStudy()}>
                     Descargar PDF
                   </button>
@@ -225,12 +232,34 @@ export default function EstudiosCard({studies}: {studies: Studies}) {
 
           {/* Action button for Specialist / Médico */}
           {userData?.role === "professional" && studies.status === "pending" && (
-            <button
-              className="cursor-pointer rounded bg-white/20 px-3 py-1 font-medium underline transition hover:bg-white/30"
-              onClick={() => setShowUploadModal(true)}
-            >
-              Agregar informe
-            </button>
+            <div className="flex flex-wrap gap-2">
+              {studies.requires_report !== false ? (
+                <button
+                  className="cursor-pointer rounded bg-white/20 px-3 py-1 font-medium underline transition hover:bg-white/30"
+                  disabled={uploading}
+                  onClick={() => setShowUploadModal(true)}
+                >
+                  Agregar informe
+                </button>
+              ) : (
+                <>
+                  <button
+                    className="cursor-pointer rounded bg-white/20 px-3 py-1 font-medium underline transition hover:bg-white/30 disabled:opacity-50"
+                    disabled={uploading}
+                    onClick={() => void handleConfirmWithoutReport()}
+                  >
+                    Confirmar estudio
+                  </button>
+                  <button
+                    className="cursor-pointer rounded bg-white/20 px-3 py-1 font-medium underline transition hover:bg-white/30 disabled:opacity-50"
+                    disabled={uploading}
+                    onClick={() => setShowUploadModal(true)}
+                  >
+                    Agregar informe (opcional)
+                  </button>
+                </>
+              )}
+            </div>
           )}
         </div>
       </section>
