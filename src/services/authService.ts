@@ -107,7 +107,7 @@ export const authService = {
     formData.append("company_name", userData.company_name ?? "");
     formData.append("responsable_name", userData.responsable_name ?? "");
     formData.append("cuit", userData.cuit ?? "");
-    formData.append("phone", userData.phone);
+    formData.append("phone", userData.phone ?? "");
     if (userData.company_address) {
       formData.append("company_address", userData.company_address);
     }
