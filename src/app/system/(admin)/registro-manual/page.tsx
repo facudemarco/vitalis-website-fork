@@ -118,7 +118,7 @@ export default function RegistroManualPage() {
     }
     setEmployeeError("");
     try {
-      await dataService.createEmployee(companyId, data as UserPatient);
+      await dataService.createEmployee(companyId, data as unknown as UserPatient);
       alert("Empleado agregado correctamente.");
       resetEmployee();
     } catch (error) {
