@@ -235,7 +235,7 @@ export default function RegistroManualPage() {
 
           <div className="flex flex-col gap-1">
             <label className="text-sm font-semibold text-black" htmlFor="co_phone">
-              Teléfono <span className="text-red-500">*</span>
+              Teléfono
             </label>
             <input
               className="rounded-md border px-3 py-2"
