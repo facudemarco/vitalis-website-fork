@@ -1,41 +1,76 @@
 "use client";
-import {useState} from "react";
-import {useRouter} from "next/navigation";
-import {useForm} from "react-hook-form";
+import {useEffect, useState} from "react";
+remove unused routerimport {useForm} from "react-hook-form";
 
 import {Users} from "@/components/ui/Icons";
 import {authService} from "@/services/authService";
+import {dataService} from "@/services/dataService";
+import {UserCompany, UserPatient} from "@/types";
 
 import Panel from "../../components/Panel";
 
-type Tab = "empresa" | "paciente";
+type Tab = "empresa" | "empleado" | "paciente";
 
 interface PatientForm {
-  first_name: string;
-  last_name: string;
-  dni: string;
-  date_of_birth: string;
+  first_name?: string;
+  last_name?: string;
+  dni?: string;
+  date_of_birth?: string;
   email: string;
   password: string;
   confirmPassword: string;
-  phone: string;
+  phone?: string;
   insurance?: string;
 }
 
 interface CompanyForm {
-  company_name: string;
-  responsable_name: string;
-  cuit: string;
+  company_name?: string;
+  responsable_name?: string;
+  cuit?: string;
   email: string;
   password: string;
   confirmPassword: string;
-  phone: string;
+  phone?: string;
   company_address?: string;
 }
 
+interface EmployeeForm {
+  first_name?: string;
+  last_name?: string;
+  dni?: string;
+  date_of_birth?: string;
+  phone?: string;
+  address?: string;
+  social_security?: string;
+  study_type?: string;
+}
+
+const employeeFields: Array<{name: keyof EmployeeForm; label: string}> = [
+  {name: "first_name", label: "Nombre"},
+  {name: "last_name", label: "Apellido"},
+  {name: "dni", label: "DNI"},
+  {name: "date_of_birth", label: "Fecha de nacimiento"},
+  {name: "phone", label: "Teléfono"},
+  {name: "address", label: "Dirección"},
+  {name: "social_security", label: "Obra social"},
+  {name: "study_type", label: "Tipo de estudio"},
+];
+
 export default function RegistroManualPage() {
   const [tab, setTab] = useState<Tab>("empresa");
-  const router = useRouter();
+  const [companies, setCompanies] = useState<UserCompany[]>([]);
+  const [companyId, setCompanyId] = useState("");
+  const [employeeError, setEmployeeError] = useState("");
+  const {register: regEmployee, handleSubmit: submitEmployee, reset: resetEmployee} = useForm<EmployeeForm>();
+
+  useEffect(() => {
+    dataService.getCompanie()
+      .then(setCompanies)
+      .catch((error) => {
+        console.error("Error al cargar empresas:", error);
+        setEmployeeError("No se pudieron cargar las empresas.");
+      });
+  }, []);
 
   /* ─────────────────── EMPRESA ─────────────────── */
   const {
@@ -76,6 +111,22 @@ export default function RegistroManualPage() {
   const patConfirm = watchPat("confirmPassword");
   const patPwdMatch = !patConfirm || patPwd === patConfirm;
 
+  const onSubmitEmployee = submitEmployee(async (data) => {
+    if (!companyId) {
+      setEmployeeError("Seleccioná una empresa.");
+      return;
+    }
+    setEmployeeError("");
+    try {
+      await dataService.createEmployee(companyId, data as UserPatient);
+      alert("Empleado agregado correctamente.");
+      resetEmployee();
+    } catch (error) {
+      console.error("Error al agregar empleado:", error);
+      setEmployeeError("No se pudo agregar el empleado.");
+    }
+  });
+
   const onSubmitPatient = hsPat(async (data) => {
     if (data.password !== data.confirmPassword) return;
     try {
@@ -94,7 +145,7 @@ export default function RegistroManualPage() {
   return (
     <Panel pageIcon={<Users />} pageTitle="Registro Manual">
       {/* Tabs */}
-      <div className="mb-6 grid grid-cols-2 text-center text-sm font-semibold">
+      <div className="mb-6 grid grid-cols-3 text-center text-sm font-semibold">
         <button
           className={`cursor-pointer py-2 transition-all ${
             tab === "empresa" ? "bg-[#3F5C3B] text-white" : "bg-[#A3DFA3] text-black"
@@ -103,6 +154,15 @@ export default function RegistroManualPage() {
           onClick={() => setTab("empresa")}
         >
           Empresa
+        </button>
+        <button
+          className={`cursor-pointer py-2 transition-all ${
+            tab === "empleado" ? "bg-[#3F5C3B] text-white" : "bg-[#A3DFA3] text-black"
+          }`}
+          type="button"
+          onClick={() => setTab("empleado")}
+        >
+          Empleado
         </button>
         <button
           className={`cursor-pointer py-2 transition-all ${
@@ -126,40 +186,37 @@ export default function RegistroManualPage() {
         >
           <div className="flex flex-col gap-1">
             <label className="text-sm font-semibold text-black" htmlFor="co_company_name">
-              Nombre de la empresa <span className="text-red-500">*</span>
+              Nombre de la empresa
             </label>
             <input
-              required
               className="rounded-md border px-3 py-2"
               id="co_company_name"
               type="text"
-              {...regCo("company_name", {required: true})}
+              {...regCo("company_name")}
             />
           </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-sm font-semibold text-black" htmlFor="co_responsable_name">
-              Nombre del responsable <span className="text-red-500">*</span>
+              Nombre del responsable
             </label>
             <input
-              required
               className="rounded-md border px-3 py-2"
               id="co_responsable_name"
               type="text"
-              {...regCo("responsable_name", {required: true})}
+              {...regCo("responsable_name")}
             />
           </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-sm font-semibold text-black" htmlFor="co_cuit">
-              CUIT <span className="text-red-500">*</span>
+              CUIT
             </label>
             <input
-              required
               className="rounded-md border px-3 py-2"
               id="co_cuit"
               type="text"
-              {...regCo("cuit", {required: true})}
+              {...regCo("cuit")}
             />
           </div>
 
@@ -181,11 +238,10 @@ export default function RegistroManualPage() {
               Teléfono <span className="text-red-500">*</span>
             </label>
             <input
-              required
               className="rounded-md border px-3 py-2"
               id="co_phone"
               type="tel"
-              {...regCo("phone", {required: true})}
+              {...regCo("phone")}
             />
           </div>
 
@@ -237,6 +293,54 @@ export default function RegistroManualPage() {
         </form>
       )}
 
+      {/* ── FORM EMPLEADO ── */}
+      {tab === "empleado" && (
+        <form
+          className="mt-4 flex flex-col gap-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void onSubmitEmployee(event);
+          }}
+        >
+          {employeeError && <p className="text-sm text-red-600" role="alert">{employeeError}</p>}
+          <label className="flex flex-col gap-1 text-sm font-semibold text-black" htmlFor="employee_company">
+            Empresa <span className="text-red-500">*</span>
+            <select
+              className="rounded-md border bg-white px-3 py-2 font-normal"
+              id="employee_company"
+              required
+              value={companyId}
+              onChange={(event) => {
+                setCompanyId(event.target.value);
+                setEmployeeError("");
+              }}
+            >
+              <option disabled value="">Seleccioná una empresa</option>
+              {companies.map((company) => (
+                <option key={company.id} value={company.id}>{company.name || "Empresa sin nombre"}</option>
+              ))}
+            </select>
+          </label>
+          {employeeFields.map((field) => (
+            <label className="flex flex-col gap-1 text-sm font-semibold text-black" htmlFor={`employee_${field.name}`} key={field.name}>
+              {field.label}
+              <input
+                className="rounded-md border px-3 py-2 font-normal"
+                id={`employee_${field.name}`}
+                type={field.name === "date_of_birth" ? "date" : "text"}
+                {...regEmployee(field.name)}
+              />
+            </label>
+          ))}
+          <button
+            className="bg-blue mt-2 cursor-pointer rounded-lg py-2 font-semibold text-white"
+            type="submit"
+          >
+            Registrar empleado
+          </button>
+        </form>
+      )}
+
       {/* ── FORM PACIENTE ── */}
       {tab === "paciente" && (
         <form
@@ -248,14 +352,13 @@ export default function RegistroManualPage() {
         >
           <div className="flex flex-col gap-1">
             <label className="text-sm font-semibold text-black" htmlFor="pat_first_name">
-              Nombre <span className="text-red-500">*</span>
+              Nombre
             </label>
             <input
-              required
               className="rounded-md border px-3 py-2"
               id="pat_first_name"
               type="text"
-              {...regPat("first_name", {required: true})}
+              {...regPat("first_name")}
             />
           </div>
 
@@ -273,27 +376,25 @@ export default function RegistroManualPage() {
 
           <div className="flex flex-col gap-1">
             <label className="text-sm font-semibold text-black" htmlFor="pat_dni">
-              DNI <span className="text-red-500">*</span>
+              DNI
             </label>
             <input
-              required
               className="rounded-md border px-3 py-2"
               id="pat_dni"
               type="text"
-              {...regPat("dni", {required: true})}
+              {...regPat("dni")}
             />
           </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-sm font-semibold text-black" htmlFor="pat_date_of_birth">
-              Fecha de nacimiento <span className="text-red-500">*</span>
+              Fecha de nacimiento
             </label>
             <input
-              required
               className="rounded-md border px-3 py-2"
               id="pat_date_of_birth"
               type="date"
-              {...regPat("date_of_birth", {required: true})}
+              {...regPat("date_of_birth")}
             />
           </div>
 
@@ -312,14 +413,13 @@ export default function RegistroManualPage() {
 
           <div className="flex flex-col gap-1">
             <label className="text-sm font-semibold text-black" htmlFor="pat_phone">
-              Teléfono <span className="text-red-500">*</span>
+              Teléfono
             </label>
             <input
-              required
               className="rounded-md border px-3 py-2"
               id="pat_phone"
               type="tel"
-              {...regPat("phone", {required: true})}
+              {...regPat("phone")}
             />
           </div>
 
