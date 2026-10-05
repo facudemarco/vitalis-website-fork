@@ -22,14 +22,14 @@ interface LoginResponse {
 }
 
 interface RegisterPatientFormData {
-  first_name: string;
-  last_name: string;
-  dni: string;
-  date_of_birth: string;
+  first_name?: string;
+  last_name?: string;
+  dni?: string;
+  date_of_birth?: string;
   email: string;
   password: string;
   confirmPassword: string;
-  phone: string;
+  phone?: string;
   insurance?: string;
 }
 
@@ -37,10 +37,10 @@ interface RegisterCompanyFormData {
   email: string;
   password: string;
   confirmPassword: string;
-  company_name: string;
-  responsable_name: string;
-  cuit: string;
-  phone: string;
+  company_name?: string;
+  responsable_name?: string;
+  cuit?: string;
+  phone?: string;
   company_address?: string;
 }
 
@@ -74,13 +74,13 @@ export const authService = {
   async register(userData: RegisterPatientFormData): Promise<any> {
     const formData = new URLSearchParams();
 
-    formData.append("first_name", userData.first_name);
+    formData.append("first_name", userData.first_name ?? "");
     formData.append("last_name", userData.last_name ?? "");
-    formData.append("dni", userData.dni);
-    formData.append("date_of_birth", userData.date_of_birth);
+    formData.append("dni", userData.dni ?? "");
+    formData.append("date_of_birth", userData.date_of_birth ?? "");
     formData.append("email", userData.email);
     formData.append("password", userData.password);
-    formData.append("phone", userData.phone);
+    formData.append("phone", userData.phone ?? "");
     if (userData.insurance) {
       formData.append("insurance", userData.insurance);
     }
@@ -104,9 +104,9 @@ export const authService = {
     formData.append("email", userData.email);
     formData.append("password", userData.password);
     formData.append("confirmPassword", userData.confirmPassword);
-    formData.append("company_name", userData.company_name);
-    formData.append("responsable_name", userData.responsable_name);
-    formData.append("cuit", userData.cuit);
+    formData.append("company_name", userData.company_name ?? "");
+    formData.append("responsable_name", userData.responsable_name ?? "");
+    formData.append("cuit", userData.cuit ?? "");
     formData.append("phone", userData.phone);
     if (userData.company_address) {
       formData.append("company_address", userData.company_address);
