@@ -30,6 +30,7 @@ interface NavItem {
 const navByRole: Record<Roles, NavItem[]> = {
   admin: [
     {label: "Clientes", href: "/system/clientes", icon: <Clients />},
+    {label: "Registrar", href: "/system/registro-manual", icon: <Users />},
     {label: "Usuarios", href: "/system/usuarios", icon: <Users />},
     {label: "Profesionales", href: "/system/profesionales", icon: <Profesionals />},
     {label: "Estudios", href: "/system/estudios", icon: <Estudies />},
