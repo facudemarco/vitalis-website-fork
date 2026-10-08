@@ -192,19 +192,6 @@ export default function SystemUsuariosPage() {
     }
   };
 
-  const toggleActive = async (user: ManagedUser) => {
-    const nextState = !user.is_active;
-    try {
-      await dataService.updateUserStatus(user.id, nextState);
-      setUsers((current) =>
-        current.map((item) => (item.id === user.id ? {...item, is_active: nextState} : item)),
-      );
-    } catch (error) {
-      console.error("Error al actualizar el estado del usuario:", error);
-      alert("No se pudo actualizar el estado del usuario.");
-    }
-  };
-
   const resetPassword = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!passwordUser) return;
@@ -236,24 +223,22 @@ export default function SystemUsuariosPage() {
     <Panel pageIcon={<UserSVG />} pageTitle="Usuarios">
       <div className="flex flex-col gap-5 overflow-x-auto">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
-            {(Object.keys(roleLabels) as Array<UserRole | "all">).map((role) => (
-              <button
-                key={role}
-                type="button"
-                onClick={() => setSelectedRole(role)}
-                className={`rounded-lg border px-3 py-2 text-sm transition ${
-                  selectedRole === role
-                    ? "border-blue-400 bg-blue-600 text-white"
-                    : "border-neutral-500 bg-[#333333] text-white hover:bg-[#454545]"
-                }`}
-              >
-                {roleLabels[role]}
-              </button>
-            ))}
-          </div>
+          <label className="flex items-center gap-2 text-sm text-white">
+            <span>Tipo de usuario</span>
+            <select
+              className="rounded-lg border border-[#4A4A4A] bg-[#333333] px-3 py-2 text-white"
+              value={selectedRole}
+              onChange={(event) => setSelectedRole(event.target.value as UserRole | "all")}
+            >
+              {(Object.keys(roleLabels) as Array<UserRole | "all">).map((role) => (
+                <option key={role} value={role}>
+                  {roleLabels[role]}
+                </option>
+              ))}
+            </select>
+          </label>
           <Link
-            className="flex w-max items-center gap-2 rounded-xl border px-3 py-2 text-white"
+            className="flex w-max items-center gap-2 rounded-xl border px-3 py-1 text-white"
             href="/system/usuarios/add"
           >
             <span className="text-sm">Agregar usuario</span>
@@ -266,10 +251,11 @@ export default function SystemUsuariosPage() {
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
           </div>
         ) : (
-          <table className="w-full min-w-[850px] text-xs">
+          <table className="w-full text-xs">
             <thead>
               <tr className="bg-[#3A3A3A] text-white">
-                <th className="border-r border-[#4A4A4A] px-3 py-2 text-left">Usuario</th>
+                <th className="border-r border-[#4A4A4A] px-3 py-2 text-left">Nombre</th>
+                <th className="border-r border-[#4A4A4A] px-3 py-2 text-left">Apellido</th>
                 <th className="border-r border-[#4A4A4A] px-3 py-2 text-left">Correo electrónico</th>
                 <th className="border-r border-[#4A4A4A] px-3 py-2 text-left">Tipo</th>
                 <th className="border-r border-[#4A4A4A] px-3 py-2 text-center">Activo</th>
@@ -279,52 +265,39 @@ export default function SystemUsuariosPage() {
             <tbody>
               {visibleUsers.map((user) => (
                 <tr key={user.id} className="border-t border-[#4A4A4A] bg-[#333333] text-white">
-                  <td className="border-r border-[#4A4A4A] px-3 py-2">
-                    {`${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() || "—"}
-                  </td>
+                  <td className="border-r border-[#4A4A4A] px-3 py-2">{user.first_name || "—"}</td>
+                  <td className="border-r border-[#4A4A4A] px-3 py-2">{user.last_name || "—"}</td>
                   <td className="border-r border-[#4A4A4A] px-3 py-2">{user.email}</td>
                   <td className="border-r border-[#4A4A4A] px-3 py-2">{roleLabels[user.role]}</td>
                   <td className="border-r border-[#4A4A4A] px-3 py-2 text-center">
                     {user.is_active ? "Sí" : "No"}
                   </td>
-                  <td className="px-3 py-2">
-                    <div className="flex flex-wrap justify-center gap-2">
-                      <button
-                        className="rounded bg-blue-600 px-2 py-1 font-semibold hover:bg-blue-700"
-                        type="button"
-                        onClick={() => void openEdit(user)}
-                      >
-                        Modificar
-                      </button>
-                      <button
-                        className="rounded bg-amber-600 px-2 py-1 font-semibold hover:bg-amber-700"
-                        type="button"
-                        onClick={() => {
-                          setPasswordUser(user);
-                          setNewPassword("");
-                          setConfirmPassword("");
-                        }}
-                      >
-                        Restablecer contraseña
-                      </button>
-                      <button
-                        className={`rounded px-2 py-1 font-semibold ${
-                          user.is_active
-                            ? "bg-red-700 hover:bg-red-800"
-                            : "bg-green-700 hover:bg-green-800"
-                        }`}
-                        type="button"
-                        onClick={() => void toggleActive(user)}
-                      >
-                        {user.is_active ? "Desactivar" : "Activar"}
-                      </button>
-                    </div>
+                  <td className="whitespace-nowrap px-3 py-2 text-center">
+                    <button
+                      className="text-blue-200 underline decoration-blue-200/40 underline-offset-2 hover:text-white"
+                      type="button"
+                      onClick={() => void openEdit(user)}
+                    >
+                      Modificar
+                    </button>
+                    <span className="mx-2 text-neutral-500">·</span>
+                    <button
+                      className="text-neutral-300 underline decoration-neutral-400/40 underline-offset-2 hover:text-white"
+                      type="button"
+                      onClick={() => {
+                        setPasswordUser(user);
+                        setNewPassword("");
+                        setConfirmPassword("");
+                      }}
+                    >
+                      Restablecer clave
+                    </button>
                   </td>
                 </tr>
               ))}
               {visibleUsers.length === 0 && (
                 <tr className="border-t border-[#4A4A4A] bg-[#333333] text-white">
-                  <td className="px-3 py-5 text-center" colSpan={5}>
+                  <td className="px-3 py-4 text-center" colSpan={6}>
                     No hay usuarios en esta categoría.
                   </td>
                 </tr>
