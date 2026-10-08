@@ -68,7 +68,7 @@ function toFormValue(value: unknown): string {
 
 function getErrorMessage(error: unknown): string {
   const apiMessage = (error as {response?: {data?: {detail?: unknown}}})?.response?.data?.detail;
-  if (typeof apiMessage === "string") return apiMessage;
+  if (apiMessage === "Email is already in use") return "Ese correo ya está registrado. Elegí otro para continuar.";
   return "Ocurrió un error. Revisá los datos e intentá nuevamente.";
 }
 
@@ -150,7 +150,8 @@ export default function SystemUsuariosPage() {
       }
     } catch (error) {
       console.error("Error al cargar datos extendidos del usuario:", error);
-      alert("No se pudieron cargar todos los datos del perfil. Podés revisar e intentar de nuevo.");
+      alert("No se pudieron cargar todos los datos del perfil. Volvé a intentarlo antes de guardar.");
+      return;
     }
 
     setProfileForm(form);
