@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import {useEffect, useMemo, useState} from "react";
+import type {FormEvent} from "react";
 
 import {UserSVG} from "@/components/ui/Icons";
 import {dataService} from "@/services/dataService";
@@ -156,7 +157,7 @@ export default function SystemUsuariosPage() {
     setEditingUser(user);
   };
 
-  const saveProfile = async (event: React.FormEvent<HTMLFormElement>) => {
+  const saveProfile = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!editingUser) return;
 
@@ -203,7 +204,7 @@ export default function SystemUsuariosPage() {
     }
   };
 
-  const resetPassword = async (event: React.FormEvent<HTMLFormElement>) => {
+  const resetPassword = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!passwordUser) return;
     if (newPassword.length < 8) {
