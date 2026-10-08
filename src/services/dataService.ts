@@ -3,6 +3,7 @@ import type {
   UserCompany,
   UserPatient,
   UserProfessional,
+  UserSecretary,
   MedicalRecord,
   Studies,
   StudiesCategory,
@@ -11,7 +12,7 @@ import type {
 
 import {apiClient} from "@/lib/axios";
 
-export type User = UserAdmin | UserCompany | UserPatient | UserProfessional;
+export type User = UserAdmin | UserCompany | UserPatient | UserProfessional | UserSecretary;
 
 interface AddUserForm {
   first_name: string;
@@ -379,12 +380,35 @@ export const dataService = {
   /**
    * Obtener usuarios filtrado por roles
    */
-  async getUsersFilters(role: string): Promise<UserProfessional[] | UserAdmin[]> {
+  async getUsersFilters(role: string): Promise<Array<UserAdmin | UserCompany | UserPatient | UserProfessional | UserSecretary>> {
     const response = await apiClient.get(`/admin/users/role/${role}`, {
       withCredentials: true,
     });
 
-    return response.data.users as UserProfessional[] | UserAdmin[];
+    return response.data.users;
+  },
+
+  /**
+   * Actualizar desde el panel de administración los datos de cuenta y perfil.
+   */
+  async updateManagedUserProfile(userId: string, formData: FormData): Promise<void> {
+    await apiClient.put(`/admin/users/${userId}/profile`, formData, {
+      withCredentials: true,
+      headers: {"Content-Type": "multipart/form-data"},
+    });
+  },
+
+  /**
+   * Restablecer la contraseña desde el panel de administración.
+   */
+  async resetManagedUserPassword(userId: string, password: string): Promise<void> {
+    const formData = new FormData();
+    formData.append("password", password);
+
+    await apiClient.put(`/admin/users/${userId}/password`, formData, {
+      withCredentials: true,
+      headers: {"Content-Type": "multipart/form-data"},
+    });
   },
 
   /**
