@@ -63,6 +63,26 @@ export const dataService = {
   },
 
   /**
+   * Modificar los datos de un paciente (admin y secretaria).
+   */
+  async updatePatient(patientId: string, data: Partial<UserPatient>): Promise<UserPatient> {
+    const response = await apiClient.put(`/patients/${patientId}`, data, {
+      withCredentials: true,
+    });
+    return response.data as UserPatient;
+  },
+
+  /**
+   * Actualizar el perfil de una empresa (admin y secretaria).
+   */
+  async updateCompanyProfile(ownerUserId: string, formData: FormData): Promise<void> {
+    await apiClient.put(`/admin/users/company/${ownerUserId}`, formData, {
+      withCredentials: true,
+      headers: {"Content-Type": "multipart/form-data"},
+    });
+  },
+
+  /**
    * Obtener paciente por ID
    */
   async getPatientById(patient_id: string): Promise<UserPatient> {
