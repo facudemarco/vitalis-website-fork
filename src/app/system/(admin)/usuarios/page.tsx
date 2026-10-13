@@ -66,6 +66,9 @@ function toFormValue(value: unknown): string {
   return value === null || value === undefined ? "" : String(value);
 }
 
+const deletionLabels: Record<string, string> = {companies: "Empresa", patients: "Paciente/empleado", users: "Cuenta", medical_record: "Ficha médica", studies: "Estudio", study_files: "Archivo de estudio", medical_record_data_img: "Imagen de ficha"};
+const deletionLabel = (table: string) => deletionLabels[table] ?? table.replace(/^medical_record_/, "Sección de ficha: ").replaceAll("_", " ");
+
 function getErrorMessage(error: unknown): string {
   const apiMessage = (error as {response?: {data?: {detail?: unknown}}})?.response?.data?.detail;
   if (apiMessage === "Email is already in use") return "Ese correo ya está registrado. Elegí otro para continuar.";
@@ -271,6 +274,13 @@ export default function SystemUsuariosPage() {
                   <td className="border-r border-[#4A4A4A] px-3 py-2">{roleLabels[user.role]}</td>
                   <td className="border-r border-[#4A4A4A] px-3 py-2 text-center">
                     {user.is_active ? "Sí" : "No"}
+                    <button className="ml-2 text-blue-200 underline" type="button" onClick={async () => {
+                      try {
+                        const nextStatus = !user.is_active;
+                        await dataService.updateUserStatus(user.id, nextStatus);
+                        setUsers((current) => current.map((item) => item.id === user.id ? {...item, is_active: nextStatus} : item));
+                      } catch { alert("No se pudo actualizar el estado del usuario."); }
+                    }}>{user.is_active ? "Desactivar" : "Activar"}</button>
                   </td>
                   <td className="whitespace-nowrap px-3 py-2 text-center">
                     <button
@@ -291,6 +301,23 @@ export default function SystemUsuariosPage() {
                       }}
                     >
                       Restablecer clave
+                    </button>
+                    <span className="mx-2 text-neutral-500">·</span>
+                    <button
+                      className="text-red-300 underline decoration-red-300/40 underline-offset-2 hover:text-white"
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const summary = await dataService.getUserDeletionSummary(user.id);
+                          const related = summary.related_data?.filter((item: {count: number}) => item.count > 0).map((item: {table: string; count: number}) => `• ${item.count} × ${deletionLabel(item.table)}`).join("\n") || "Sin otros registros asociados.";
+                          const confirmed = window.confirm(`Vas a eliminar definitivamente la cuenta de ${user.email} y todos sus datos relacionados:\n\n${related}\n\n¿Confirmás que se borre todo?`);
+                          if (!confirmed) return;
+                          await dataService.deleteUser(user.id, true);
+                          setUsers((current) => current.filter((item) => item.id !== user.id));
+                        } catch { alert("No se pudo eliminar el usuario y sus datos relacionados."); }
+                      }}
+                    >
+                      Eliminar
                     </button>
                   </td>
                 </tr>
