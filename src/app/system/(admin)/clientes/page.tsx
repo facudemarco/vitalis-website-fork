@@ -222,7 +222,7 @@ export default function ClientesAdminPage() {
                             await dataService.deleteCompany(row.id, summary.confirmation_token);
                             setCompanies((current) => current.filter((company) => company.id !== row.id));
                             setPatients((current) => current.filter((patient) => patient.company_id !== row.id));
-                          } catch { setActionMessage("No se pudo eliminar la empresa y sus datos relacionados."); }
+                          } catch (error: unknown) { const changed = (error as {response?: {status?: number}})?.response?.status === 409; setActionMessage(changed ? "Los datos relacionados cambiaron. Volvé a intentar para revisar el nuevo detalle antes de borrar." : "No se pudo eliminar la empresa y sus datos relacionados."); }
                         }}>Eliminar</button>}
                       </td>}
                     </tr>
@@ -275,7 +275,7 @@ export default function ClientesAdminPage() {
                             if (!confirmed) return;
                             await dataService.deletePatient(row.id, summary.confirmation_token);
                             setPatients((current) => current.filter((patient) => patient.id !== row.id));
-                          } catch { setActionMessage("No se pudo eliminar el paciente y sus datos relacionados."); }
+                          } catch (error: unknown) { const changed = (error as {response?: {status?: number}})?.response?.status === 409; setActionMessage(changed ? "Los datos relacionados cambiaron. Volvé a intentar para revisar el nuevo detalle antes de borrar." : "No se pudo eliminar el paciente y sus datos relacionados."); }
                         }}>Eliminar</button>
                       </td>}
                     </tr>
