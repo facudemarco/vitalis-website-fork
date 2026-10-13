@@ -312,7 +312,7 @@ export default function SystemUsuariosPage() {
                           const related = summary.related_data?.filter((item: {count: number}) => item.count > 0).map((item: {table: string; count: number}) => `• ${item.count} × ${deletionLabel(item.table)}`).join("\n") || "Sin otros registros asociados.";
                           const confirmed = window.confirm(`Vas a eliminar definitivamente la cuenta de ${user.email} y todos sus datos relacionados:\n\n${related}\n\n¿Confirmás que se borre todo?`);
                           if (!confirmed) return;
-                          await dataService.deleteUser(user.id, true);
+                          await dataService.deleteUser(user.id, summary.confirmation_token);
                           setUsers((current) => current.filter((item) => item.id !== user.id));
                         } catch { alert("No se pudo eliminar el usuario y sus datos relacionados."); }
                       }}
