@@ -276,7 +276,7 @@ export default function ClientesAdminPage() {
                             await dataService.deletePatient(row.id, summary.confirmation_token);
                             setPatients((current) => current.filter((patient) => patient.id !== row.id));
                           } catch (error: unknown) { const changed = (error as {response?: {status?: number}})?.response?.status === 409; setActionMessage(changed ? "Los datos relacionados cambiaron. Volvé a intentar para revisar el nuevo detalle antes de borrar." : "No se pudo eliminar el paciente y sus datos relacionados."); }
-                        }}>Eliminar</button>
+                        }}>Eliminar</button>}
                       </td>}
                     </tr>
                   ))}
