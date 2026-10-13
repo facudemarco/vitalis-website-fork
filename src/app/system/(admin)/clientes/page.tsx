@@ -310,17 +310,17 @@ export default function ClientesAdminPage() {
               await dataService.updatePatient(editingPatient.id, {
                 first_name: String(form.get("first_name") ?? ""), last_name: String(form.get("last_name") ?? ""),
                 dni: String(form.get("dni") ?? ""), date_of_birth: String(form.get("date_of_birth") ?? ""),
-                phone: String(form.get("phone") ?? ""), social_security: String(form.get("social_security") ?? ""),
+                phone: String(form.get("phone") ?? ""), address: String(form.get("address") ?? ""), social_security: String(form.get("social_security") ?? ""),
               });
               setPatients((current) => current.map((patient) => patient.id === editingPatient.id ? {...patient,
                 first_name: String(form.get("first_name") ?? ""), last_name: String(form.get("last_name") ?? ""),
                 dni: String(form.get("dni") ?? ""), date_of_birth: String(form.get("date_of_birth") ?? ""),
-                phone: String(form.get("phone") ?? ""), social_security: String(form.get("social_security") ?? ""),
+                phone: String(form.get("phone") ?? ""), address: String(form.get("address") ?? ""), social_security: String(form.get("social_security") ?? ""),
               } : patient)); setEditingPatient(null);
             } catch { setActionMessage("No se pudieron guardar los cambios del paciente."); }
             finally { setSaving(false); }
           }}>
-            {[ ["first_name", "Nombre", editingPatient.first_name], ["last_name", "Apellido", editingPatient.last_name], ["dni", "DNI", editingPatient.dni], ["date_of_birth", "Fecha de nacimiento", editingPatient.date_of_birth], ["phone", "Teléfono", editingPatient.phone], ["social_security", "Obra social", editingPatient.social_security] ].map(([name, label, value]) => <label key={String(name)} className="block text-sm">{label}<input className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2" name={String(name)} type="text" defaultValue={String(value ?? "")} /></label>)}
+            {[ ["first_name", "Nombre", editingPatient.first_name], ["last_name", "Apellido", editingPatient.last_name], ["dni", "DNI", editingPatient.dni], ["date_of_birth", "Fecha de nacimiento", editingPatient.date_of_birth], ["phone", "Teléfono", editingPatient.phone], ["address", "Dirección", editingPatient.address], ["social_security", "Obra social", editingPatient.social_security] ].map(([name, label, value]) => <label key={String(name)} className="block text-sm">{label}<input className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2" name={String(name)} type="text" defaultValue={String(value ?? "")} /></label>)}
             <div className="flex justify-end gap-2 pt-2"><button className="rounded border px-4 py-2" type="button" onClick={() => setEditingPatient(null)}>Cancelar</button><button className="rounded bg-[#3F5C3B] px-4 py-2 text-white disabled:opacity-60" disabled={saving} type="submit">{saving ? "Guardando..." : "Guardar"}</button></div>
           </form>}
           {editingCompany && <form className="space-y-3" onSubmit={async (event) => {
@@ -332,12 +332,12 @@ export default function ClientesAdminPage() {
               setCompanies((current) => current.map((company) => company.id === editingCompany.id ? {...company,
                 name: String(form.get("name") ?? ""), responsable_name: String(form.get("responsable_name") ?? ""),
                 cuit: String(form.get("cuit") ?? ""), email: String(form.get("email") ?? ""),
-                phone: String(form.get("phone") ?? ""), company_address: String(form.get("company_address") ?? ""),
+                phone: String(form.get("phone") ?? ""), company_address: String(form.get("company_address") ?? ""), address: String(form.get("company_address") ?? ""),
               } : company)); setEditingCompany(null);
             } catch { setActionMessage("No se pudieron guardar los cambios de la empresa."); }
             finally { setSaving(false); }
           }}>
-            {[ ["name", "Nombre de la empresa", editingCompany.name], ["responsable_name", "Responsable", editingCompany.responsable_name], ["cuit", "CUIT", editingCompany.cuit], ["email", "Correo electrónico", editingCompany.email], ["phone", "Teléfono", editingCompany.phone], ["company_address", "Domicilio", editingCompany.company_address] ].map(([name, label, value]) => <label key={String(name)} className="block text-sm">{label}<input className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2" name={String(name)} type="text" defaultValue={String(value ?? "")} /></label>)}
+            {[ ["name", "Nombre de la empresa", editingCompany.name], ["responsable_name", "Responsable", editingCompany.responsable_name], ["cuit", "CUIT", editingCompany.cuit], ["email", "Correo electrónico", editingCompany.email], ["phone", "Teléfono", editingCompany.phone], ["company_address", "Domicilio", editingCompany.company_address || editingCompany.address] ].map(([name, label, value]) => <label key={String(name)} className="block text-sm">{label}<input className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2" name={String(name)} type="text" defaultValue={String(value ?? "")} /></label>)}
             <div className="flex justify-end gap-2 pt-2"><button className="rounded border px-4 py-2" type="button" onClick={() => setEditingCompany(null)}>Cancelar</button><button className="rounded bg-[#3F5C3B] px-4 py-2 text-white disabled:opacity-60" disabled={saving} type="submit">{saving ? "Guardando..." : "Guardar"}</button></div>
           </form>}
           {actionMessage && <p className="mt-3 text-sm text-red-700">{actionMessage}</p>}
