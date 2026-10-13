@@ -25,17 +25,38 @@ export default function ProfessionalesAdminPage() {
 
   const handleDelete = async (user: UserProfessional) => {
     const fullName = `${user.name ?? ""} ${user.lastname ?? ""}`.trim() || user.email;
-    const confirmed = window.confirm(
-      `¿Estás seguro de que deseas eliminar al profesional "${fullName}"? Esta acción no se puede deshacer.`,
-    );
-    if (!confirmed) return;
 
     try {
-      await dataService.deleteUser(user.user_id);
+      const summary = await dataService.getUserDeletionSummary(user.user_id);
+      const relatedLabels: Record<string, string> = {
+        users: "Cuenta del profesional",
+        professionals: "Perfil profesional",
+        medical_record: "Ficha médica",
+        studies: "Estudio",
+        study_files: "Archivo de estudio",
+        medical_record_data_img: "Imagen de ficha",
+      };
+      const related = summary.related_data
+        ?.filter((item: {count: number}) => item.count > 0)
+        .map((item: {table: string; count: number}) => {
+          const label = relatedLabels[item.table] ?? item.table.replace(/^medical_record_/, "Sección de ficha: ").replaceAll("_", " ");
+          return `• ${item.count} × ${label}`;
+        })
+        .join("\n") || "Sin otros registros asociados.";
+
+      const confirmed = window.confirm(
+        `Vas a eliminar definitivamente al profesional "${fullName}" y sus datos relacionados:\n\n${related}\n\n¿Confirmás que se borre todo?`,
+      );
+      if (!confirmed) return;
+
+      await dataService.deleteUser(user.user_id, summary.confirmation_token);
       setUsers((prev) => prev.filter((u) => u.user_id !== user.user_id));
     } catch (err) {
       console.error("Error al eliminar profesional:", err);
-      alert("Ocurrió un error al eliminar el profesional. Por favor intentá nuevamente.");
+      const status = (err as {response?: {status?: number}})?.response?.status;
+      alert(status === 409
+        ? "Los datos relacionados cambiaron. Volvé a revisar el detalle antes de borrar."
+        : "Ocurrió un error al eliminar el profesional y sus datos relacionados. Por favor intentá nuevamente.");
     }
   };
 
