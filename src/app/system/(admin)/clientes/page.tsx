@@ -71,7 +71,7 @@ export default function ClientesAdminPage() {
     const getPatients = async () => {
       const patients = await dataService.getPatients();
       const companies = await dataService.getCompanie();
-      const companyUsers = isAdmin ? await dataService.getUsersFilters("company") : [];
+      const companyUsers = isAdmin ? (await dataService.getUsersFilters("company")).filter((account): account is UserCompany => account.role === "company") : [];
 
       setPatients(patients);
       setCompanies(companies);
