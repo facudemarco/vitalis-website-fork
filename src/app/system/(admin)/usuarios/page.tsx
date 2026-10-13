@@ -310,7 +310,11 @@ export default function SystemUsuariosPage() {
                         try {
                           const summary = await dataService.getUserDeletionSummary(user.id);
                           const related = summary.related_data?.filter((item: {count: number}) => item.count > 0).map((item: {table: string; count: number}) => `• ${item.count} × ${deletionLabel(item.table)}`).join("\n") || "Sin otros registros asociados.";
-                          const confirmed = window.confirm(`Vas a eliminar definitivamente la cuenta de ${user.email} y todos sus datos relacionados:\n\n${related}\n\n¿Confirmás que se borre todo?`);
+                          const employees = summary.employees?.length ? summary.employees.map((employee: {name: string}) => `• ${employee.name}`).join("\n") : "Sin empleados asociados."; 
+                          const companyNotice = summary.employee_count !== null && summary.employee_count !== undefined
+                            ? `\n\nLa cuenta pertenece a la empresa "${summary.company_name}". También se eliminarán ${summary.employee_count} empleados:\n${employees}`
+                            : "";
+                          const confirmed = window.confirm(`Vas a eliminar definitivamente la cuenta de ${user.email} y todos sus datos relacionados:${companyNotice}\n\nDatos relacionados:\n${related}\n\n¿Confirmás que se borre todo?`);
                           if (!confirmed) return;
                           await dataService.deleteUser(user.id, summary.confirmation_token);
                           setUsers((current) => current.filter((item) => item.id !== user.id));
