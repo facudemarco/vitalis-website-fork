@@ -74,7 +74,6 @@ export default function ClientesAdminPage() {
   const [editingCompany, setEditingCompany] = useState<UserCompany | null>(null);
   const [companyStatuses, setCompanyStatuses] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
-  const [loadingDeletion, setLoadingDeletion] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
 
   useEffect(() => {
@@ -216,15 +215,15 @@ export default function ClientesAdminPage() {
                         {isAdmin && <button className="ml-3 text-red-300 underline" type="button" onClick={async () => {
                           try {
                             const summary = await dataService.getCompanyDeletionSummary(row.id);
-                            const employees = summary.employees?.length ? summary.employees.map((employee: {name: string}) => `• ${employee.name}`).join("\\n") : "No tiene empleados asociados.";
-                            const related = summary.related_data?.filter((item: {count: number}) => item.count > 0).map((item: {table: string; count: number}) => `• ${item.count} × ${relatedTableLabel(item.table)}`).join("\\n") || "Sin otros registros asociados.";
-                            const confirmed = window.confirm(`Vas a eliminar definitivamente la empresa "${summary.company_name}" y todos sus datos.\\n\\nTambién se eliminarán ${summary.employee_count} empleados:\\n${employees}\\n\\nDatos relacionados:\\n${related}\\n\\n¿Confirmás que se borre todo?`);
+                            const employees = summary.employees?.length ? summary.employees.map((employee: {name: string}) => `• ${employee.name}`).join("\n") : "No tiene empleados asociados.";
+                            const related = summary.related_data?.filter((item: {count: number}) => item.count > 0).map((item: {table: string; count: number}) => `• ${item.count} × ${relatedTableLabel(item.table)}`).join("\n") || "Sin otros registros asociados.";
+                            const confirmed = window.confirm(`Vas a eliminar definitivamente la empresa "${summary.company_name}" y todos sus datos.\n\nTambién se eliminarán ${summary.employee_count} empleados:\n${employees}\n\nDatos relacionados:\n${related}\n\n¿Confirmás que se borre todo?`);
                             if (!confirmed) return;
                             await dataService.deleteCompany(row.id, true);
                             setCompanies((current) => current.filter((company) => company.id !== row.id));
                             setPatients((current) => current.filter((patient) => patient.company_id !== row.id));
                           } catch { setActionMessage("No se pudo eliminar la empresa y sus datos relacionados."); }
-                        }}>{loadingDeletion ? "Consultando..." : "Eliminar"}</button>}
+                        }}>Eliminar</button>}
                       </td>}
                     </tr>
                   ))
@@ -271,8 +270,8 @@ export default function ClientesAdminPage() {
                         {isAdmin && <button className="ml-3 text-red-300 underline" type="button" onClick={async () => {
                           try {
                             const summary = await dataService.getPatientDeletionSummary(row.id);
-                            const related = summary.related_data?.filter((item: {count: number}) => item.count > 0).map((item: {table: string; count: number}) => `• ${item.count} × ${relatedTableLabel(item.table)}`).join("\\n") || "Sin otros registros asociados.";
-                            const confirmed = window.confirm(`Vas a eliminar definitivamente al paciente "${summary.patient_name}" y su cuenta, junto con todos los datos asociados:\\n\\n${related}\\n\\n¿Confirmás que se borre todo?`);
+                            const related = summary.related_data?.filter((item: {count: number}) => item.count > 0).map((item: {table: string; count: number}) => `• ${item.count} × ${relatedTableLabel(item.table)}`).join("\n") || "Sin otros registros asociados.";
+                            const confirmed = window.confirm(`Vas a eliminar definitivamente al paciente "${summary.patient_name}" y su cuenta, junto con todos los datos asociados:\n\n${related}\n\n¿Confirmás que se borre todo?`);
                             if (!confirmed) return;
                             await dataService.deletePatient(row.id, true);
                             setPatients((current) => current.filter((patient) => patient.id !== row.id));
