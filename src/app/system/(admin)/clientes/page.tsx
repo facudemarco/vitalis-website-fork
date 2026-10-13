@@ -1,5 +1,6 @@
 "use client";
 import {useEffect, useState} from "react";
+import {useAuth} from "@/contexts/AuthContext";
 import Link from "next/link";
 
 import {UserCompany, UserPatient} from "@/types";
@@ -57,19 +58,29 @@ export default function ClientesAdminPage() {
   const [companies, setCompanies] = useState<UserCompany[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [search, setSearch] = useState<string>("");
+  const {user} = useAuth();
+  const isAdmin = user?.role === "admin";
+  const canEdit = isAdmin || user?.role === "secretary";
+  const [editingPatient, setEditingPatient] = useState<UserPatient | null>(null);
+  const [editingCompany, setEditingCompany] = useState<UserCompany | null>(null);
+  const [companyStatuses, setCompanyStatuses] = useState<Record<string, boolean>>({});
+  const [saving, setSaving] = useState(false);
+  const [actionMessage, setActionMessage] = useState("");
 
   useEffect(() => {
     const getPatients = async () => {
       const patients = await dataService.getPatients();
       const companies = await dataService.getCompanie();
+      const companyUsers = isAdmin ? await dataService.getUsersFilters("company") : [];
 
       setPatients(patients);
       setCompanies(companies);
+      setCompanyStatuses(Object.fromEntries(companyUsers.map((company) => [company.id, company.is_active !== false])));
       setLoading(false);
     };
 
     void getPatients();
-  }, []);
+  }, [isAdmin]);
 
   // Reset search when switching tabs
   const handleModeChange = (newMode: Mode) => {
@@ -150,6 +161,7 @@ export default function ClientesAdminPage() {
                   <th className="px-3 py-2 text-left">Correo electrónico</th>
                   <th className="px-3 py-2 text-left">Teléfono</th>
                   <th className="px-3 py-2 text-left">Empleados</th>
+                  {canEdit && <th className="px-3 py-2 text-left">Acciones</th>}
                 </tr>
               ) : (
                 <tr className="bg-[#3A3A3A] text-white">
@@ -162,6 +174,7 @@ export default function ClientesAdminPage() {
                   <th className="px-3 py-2 text-left">Resultados</th>
                   <th className="px-3 py-2 text-left">Ficha</th>
                   <th className="px-3 py-2 text-left">Tipo de estudio</th>
+                  {canEdit && <th className="px-3 py-2 text-left">Acciones</th>}
                 </tr>
               )}
             </thead>
@@ -183,6 +196,14 @@ export default function ClientesAdminPage() {
                           Ver
                         </Link>
                       </td>
+                      {canEdit && <td className="px-3 py-2 whitespace-nowrap">
+                        <button className="mr-3 underline" type="button" onClick={() => { setActionMessage(""); setEditingCompany(row); }}>Modificar</button>
+                        {isAdmin && row.owner_user_id && <button className="underline" type="button" onClick={async () => {
+                          const nextStatus = companyStatuses[row.owner_user_id] === false;
+                          try { await dataService.updateUserStatus(row.owner_user_id, nextStatus); setCompanyStatuses((current) => ({...current, [row.owner_user_id!]: nextStatus})); }
+                          catch { setActionMessage("No se pudo actualizar el estado de la empresa."); }
+                        }}>{companyStatuses[row.owner_user_id] === false ? "Activar" : "Desactivar"}</button>}
+                      </td>}
                     </tr>
                   ))
                 : filteredPatients.map((row, idx) => (
@@ -218,6 +239,14 @@ export default function ClientesAdminPage() {
                       >
                         {row.study_type ?? "-"}
                       </td>
+                      {canEdit && <td className="px-3 py-2 whitespace-nowrap">
+                        <button className="mr-3 underline" type="button" onClick={() => { setActionMessage(""); setEditingPatient(row); }}>Modificar</button>
+                        {isAdmin && <button className="underline" type="button" onClick={async () => {
+                          const nextStatus = row.is_active === false;
+                          try { await dataService.updateUserStatus(row.user_id, nextStatus); setPatients((current) => current.map((patient) => patient.id === row.id ? {...patient, is_active: nextStatus} : patient)); }
+                          catch { setActionMessage("No se pudo actualizar el estado del paciente."); }
+                        }}>{row.is_active === false ? "Activar" : "Desactivar"}</button>}
+                      </td>}
                     </tr>
                   ))}
 
@@ -238,6 +267,51 @@ export default function ClientesAdminPage() {
             </tbody>
           </table>
         </div>
+      {actionMessage && <p className="mt-3 text-sm text-red-700">{actionMessage}</p>}
+
+      {(editingPatient || editingCompany) && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-lg bg-white p-6 text-black shadow-xl">
+          <h2 className="mb-4 text-lg font-semibold">{editingPatient ? "Modificar paciente" : "Modificar empresa"}</h2>
+          {editingPatient && <form className="space-y-3" onSubmit={async (event) => {
+            event.preventDefault(); setSaving(true); setActionMessage("");
+            const form = new FormData(event.currentTarget);
+            try {
+              await dataService.updatePatient(editingPatient.id, {
+                first_name: String(form.get("first_name") ?? ""), last_name: String(form.get("last_name") ?? ""),
+                dni: String(form.get("dni") ?? ""), date_of_birth: String(form.get("date_of_birth") ?? ""),
+                phone: String(form.get("phone") ?? ""), social_security: String(form.get("social_security") ?? ""),
+              });
+              setPatients((current) => current.map((patient) => patient.id === editingPatient.id ? {...patient,
+                first_name: String(form.get("first_name") ?? ""), last_name: String(form.get("last_name") ?? ""),
+                dni: String(form.get("dni") ?? ""), date_of_birth: String(form.get("date_of_birth") ?? ""),
+                phone: String(form.get("phone") ?? ""), social_security: String(form.get("social_security") ?? ""),
+              } : patient)); setEditingPatient(null);
+            } catch { setActionMessage("No se pudieron guardar los cambios del paciente."); }
+            finally { setSaving(false); }
+          }}>
+            {[ ["first_name", "Nombre", editingPatient.first_name], ["last_name", "Apellido", editingPatient.last_name], ["dni", "DNI", editingPatient.dni], ["date_of_birth", "Fecha de nacimiento", editingPatient.date_of_birth], ["phone", "Teléfono", editingPatient.phone], ["social_security", "Obra social", editingPatient.social_security] ].map(([name, label, value]) => <label key={String(name)} className="block text-sm">{label}<input className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2" name={String(name)} type="text" defaultValue={String(value ?? "")} /></label>)}
+            <div className="flex justify-end gap-2 pt-2"><button className="rounded border px-4 py-2" type="button" onClick={() => setEditingPatient(null)}>Cancelar</button><button className="rounded bg-[#3F5C3B] px-4 py-2 text-white disabled:opacity-60" disabled={saving} type="submit">{saving ? "Guardando..." : "Guardar"}</button></div>
+          </form>}
+          {editingCompany && <form className="space-y-3" onSubmit={async (event) => {
+            event.preventDefault(); setSaving(true); setActionMessage("");
+            const form = new FormData(event.currentTarget);
+            try {
+              if (!editingCompany.owner_user_id) throw new Error("Falta el usuario propietario de la empresa");
+              await dataService.updateCompanyProfile(editingCompany.owner_user_id, form);
+              setCompanies((current) => current.map((company) => company.id === editingCompany.id ? {...company,
+                name: String(form.get("name") ?? ""), responsable_name: String(form.get("responsable_name") ?? ""),
+                cuit: String(form.get("cuit") ?? ""), email: String(form.get("email") ?? ""),
+                phone: String(form.get("phone") ?? ""), company_address: String(form.get("company_address") ?? ""),
+              } : company)); setEditingCompany(null);
+            } catch { setActionMessage("No se pudieron guardar los cambios de la empresa."); }
+            finally { setSaving(false); }
+          }}>
+            {[ ["name", "Nombre de la empresa", editingCompany.name], ["responsable_name", "Responsable", editingCompany.responsable_name], ["cuit", "CUIT", editingCompany.cuit], ["email", "Correo electrónico", editingCompany.email], ["phone", "Teléfono", editingCompany.phone], ["company_address", "Domicilio", editingCompany.company_address] ].map(([name, label, value]) => <label key={String(name)} className="block text-sm">{label}<input className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2" name={String(name)} type="text" defaultValue={String(value ?? "")} /></label>)}
+            <div className="flex justify-end gap-2 pt-2"><button className="rounded border px-4 py-2" type="button" onClick={() => setEditingCompany(null)}>Cancelar</button><button className="rounded bg-[#3F5C3B] px-4 py-2 text-white disabled:opacity-60" disabled={saving} type="submit">{saving ? "Guardando..." : "Guardar"}</button></div>
+          </form>}
+          {actionMessage && <p className="mt-3 text-sm text-red-700">{actionMessage}</p>}
+        </div>
+      </div>}
       </div>
     </Panel>
   );
