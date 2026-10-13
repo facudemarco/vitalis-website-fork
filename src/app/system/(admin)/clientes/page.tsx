@@ -208,10 +208,16 @@ export default function ClientesAdminPage() {
                       {canEdit && <td className="px-3 py-2 whitespace-nowrap">
                         <button className="mr-3 underline" type="button" onClick={() => { setActionMessage(""); setEditingCompany(row); }}>Modificar</button>
                         {isAdmin && row.owner_user_id && <button className="underline" type="button" onClick={async () => {
-                          const nextStatus = companyStatuses[row.owner_user_id] === false;
-                          try { await dataService.updateUserStatus(row.owner_user_id, nextStatus); setCompanyStatuses((current) => ({...current, [row.owner_user_id!]: nextStatus})); }
-                          catch { setActionMessage("No se pudo actualizar el estado de la empresa."); }
-                        }}>{companyStatuses[row.owner_user_id] === false ? "Activar" : "Desactivar"}</button>}
+                          const ownerUserId = row.owner_user_id;
+                          if (!ownerUserId) return;
+                          const nextStatus = companyStatuses[ownerUserId] === false;
+                          try {
+                            await dataService.updateUserStatus(ownerUserId, nextStatus);
+                            setCompanyStatuses((current) => ({...current, [ownerUserId]: nextStatus}));
+                          } catch {
+                            setActionMessage("No se pudo actualizar el estado de la empresa.");
+                          }
+                        }}>{companyStatuses[row.owner_user_id ?? ""] === false ? "Activar" : "Desactivar"}</button>}
                         {isAdmin && <button className="ml-3 text-red-300 underline" type="button" onClick={async () => {
                           try {
                             const summary = await dataService.getCompanyDeletionSummary(row.id);
