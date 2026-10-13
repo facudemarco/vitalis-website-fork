@@ -51,6 +51,15 @@ const getStudyDetail = (studyType?: string) => {
   return studyType;
 };
 
+const relatedTableLabels: Record<string, string> = {
+  companies: "Empresa", patients: "Paciente/empleado", users: "Cuenta de usuario",
+  medical_record: "Ficha médica", medical_record_data: "Datos personales de ficha",
+  medical_record_data_img: "Imagen de ficha", studies: "Estudio", study_files: "Archivo de estudio",
+  medical_record_signatures: "Firma del profesional", medical_record_laboral_signatures: "Firma laboral",
+  medical_record_patient_signatures: "Firma del paciente", medical_record_medical_responsable_signatures: "Firma del responsable",
+};
+const relatedTableLabel = (table: string) => relatedTableLabels[table] ?? table.replace(/^medical_record_/, "Sección de ficha: ").replaceAll("_", " ");
+
 export default function ClientesAdminPage() {
   const [mode, setMode] = useState<Mode>("empresas");
   const isEmpresas = mode === "empresas";
@@ -65,6 +74,7 @@ export default function ClientesAdminPage() {
   const [editingCompany, setEditingCompany] = useState<UserCompany | null>(null);
   const [companyStatuses, setCompanyStatuses] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
+  const [loadingDeletion, setLoadingDeletion] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
 
   useEffect(() => {
@@ -203,6 +213,18 @@ export default function ClientesAdminPage() {
                           try { await dataService.updateUserStatus(row.owner_user_id, nextStatus); setCompanyStatuses((current) => ({...current, [row.owner_user_id!]: nextStatus})); }
                           catch { setActionMessage("No se pudo actualizar el estado de la empresa."); }
                         }}>{companyStatuses[row.owner_user_id] === false ? "Activar" : "Desactivar"}</button>}
+                        {isAdmin && <button className="ml-3 text-red-300 underline" type="button" onClick={async () => {
+                          try {
+                            const summary = await dataService.getCompanyDeletionSummary(row.id);
+                            const employees = summary.employees?.length ? summary.employees.map((employee: {name: string}) => `• ${employee.name}`).join("\\n") : "No tiene empleados asociados.";
+                            const related = summary.related_data?.filter((item: {count: number}) => item.count > 0).map((item: {table: string; count: number}) => `• ${item.count} × ${relatedTableLabel(item.table)}`).join("\\n") || "Sin otros registros asociados.";
+                            const confirmed = window.confirm(`Vas a eliminar definitivamente la empresa "${summary.company_name}" y todos sus datos.\\n\\nTambién se eliminarán ${summary.employee_count} empleados:\\n${employees}\\n\\nDatos relacionados:\\n${related}\\n\\n¿Confirmás que se borre todo?`);
+                            if (!confirmed) return;
+                            await dataService.deleteCompany(row.id, true);
+                            setCompanies((current) => current.filter((company) => company.id !== row.id));
+                            setPatients((current) => current.filter((patient) => patient.company_id !== row.id));
+                          } catch { setActionMessage("No se pudo eliminar la empresa y sus datos relacionados."); }
+                        }}>{loadingDeletion ? "Consultando..." : "Eliminar"}</button>}
                       </td>}
                     </tr>
                   ))
@@ -246,6 +268,16 @@ export default function ClientesAdminPage() {
                           try { await dataService.updateUserStatus(row.user_id, nextStatus); setPatients((current) => current.map((patient) => patient.id === row.id ? {...patient, is_active: nextStatus} : patient)); }
                           catch { setActionMessage("No se pudo actualizar el estado del paciente."); }
                         }}>{row.is_active === false ? "Activar" : "Desactivar"}</button>}
+                        {isAdmin && <button className="ml-3 text-red-300 underline" type="button" onClick={async () => {
+                          try {
+                            const summary = await dataService.getPatientDeletionSummary(row.id);
+                            const related = summary.related_data?.filter((item: {count: number}) => item.count > 0).map((item: {table: string; count: number}) => `• ${item.count} × ${relatedTableLabel(item.table)}`).join("\\n") || "Sin otros registros asociados.";
+                            const confirmed = window.confirm(`Vas a eliminar definitivamente al paciente "${summary.patient_name}" y su cuenta, junto con todos los datos asociados:\\n\\n${related}\\n\\n¿Confirmás que se borre todo?`);
+                            if (!confirmed) return;
+                            await dataService.deletePatient(row.id, true);
+                            setPatients((current) => current.filter((patient) => patient.id !== row.id));
+                          } catch { setActionMessage("No se pudo eliminar el paciente y sus datos relacionados."); }
+                        }}>Eliminar</button>
                       </td>}
                     </tr>
                   ))}
