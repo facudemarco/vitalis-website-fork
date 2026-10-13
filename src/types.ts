@@ -92,6 +92,7 @@ export interface UserCompany {
   name: string;
   company_phone: string;
   company_address: string;
+  address?: string;
   first_name?: string;
   last_name?: string;
   role: "company";
@@ -114,6 +115,7 @@ export interface UserPatient {
   user_id: string;
   social_security: string;
   phone: string;
+  address?: string;
   insurance?: string;
   company_id?: string | null;
   createdAt?: string;
