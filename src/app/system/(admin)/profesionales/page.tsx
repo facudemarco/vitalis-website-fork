@@ -42,10 +42,10 @@ export default function ProfessionalesAdminPage() {
           const label = relatedLabels[item.table] ?? item.table.replace(/^medical_record_/, "Sección de ficha: ").replaceAll("_", " ");
           return `• ${item.count} × ${label}`;
         })
-        .join("\\n") || "Sin otros registros asociados.";
+        .join("\n") || "Sin otros registros asociados.";
 
       const confirmed = window.confirm(
-        `Vas a eliminar definitivamente al profesional "${fullName}" y sus datos relacionados:\\n\\n${related}\\n\\n¿Confirmás que se borre todo?`,
+        `Vas a eliminar definitivamente al profesional "${fullName}" y sus datos relacionados:\n\n${related}\n\n¿Confirmás que se borre todo?`,
       );
       if (!confirmed) return;
 
