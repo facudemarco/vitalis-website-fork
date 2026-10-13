@@ -318,7 +318,12 @@ export default function SystemUsuariosPage() {
                           if (!confirmed) return;
                           await dataService.deleteUser(user.id, summary.confirmation_token);
                           setUsers((current) => current.filter((item) => item.id !== user.id));
-                        } catch { alert("No se pudo eliminar el usuario y sus datos relacionados."); }
+                        } catch (error: unknown) {
+                          const changed = (error as {response?: {status?: number}})?.response?.status === 409;
+                          alert(changed
+                            ? "Los datos relacionados cambiaron. Volvé a revisar el detalle antes de borrar."
+                            : "No se pudo eliminar el usuario y sus datos relacionados.");
+                        }
                       }}
                     >
                       Eliminar
