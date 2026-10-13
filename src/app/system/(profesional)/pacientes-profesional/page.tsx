@@ -109,6 +109,7 @@ export default function PacientesProfesional() {
             <th className="border-r border-[#4A4A4A] px-3 py-2 text-left">Apellido</th>
             <th className="border-r border-[#4A4A4A] px-3 py-2 text-left">DNI</th>
             <th className="border-r border-[#4A4A4A] px-3 py-2 text-left">Tipo</th>
+            <th className="border-r border-[#4A4A4A] px-3 py-2 text-left">Empresa</th>
             <th className="border-r border-[#4A4A4A] px-3 py-2 text-left">Fecha de nacimiento</th>
             <th className="border-r border-[#4A4A4A] px-3 py-2 text-left">Obra social</th>
             <th className="border-r border-[#4A4A4A] px-3 py-2 text-center text-wrap">
@@ -128,6 +129,9 @@ export default function PacientesProfesional() {
               <td className="border-r border-[#4A4A4A] px-3 py-2">{row.dni || "-"}</td>
               <td className="border-r border-[#4A4A4A] px-3 py-2">
                 {row.company_id ? "Empresa" : "Particular"}
+              </td>
+              <td className="border-r border-[#4A4A4A] px-3 py-2">
+                {row.company_id ? row.company_name || "Empresa sin nombre" : "No aplica"}
               </td>
               <td className="border-r border-[#4A4A4A] px-3 py-2">{row.date_of_birth || "-"}</td>
               <td className="border-r border-[#4A4A4A] px-3 py-2">{row.social_security || "-"}</td>
