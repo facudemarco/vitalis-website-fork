@@ -47,9 +47,9 @@ export const dataService = {
   /**
    * Eliminar paciente
    */
-  async deletePatientCompany(company_id: string, patient_id: string, confirmed = false): Promise<void> {
-    if (!confirmed) throw new Error("Se requiere confirmar la eliminación y sus datos relacionados.");
-    await apiClient.delete(`/companies/${company_id}/employees/${patient_id}?confirmed=true`, {
+  async deletePatientCompany(company_id: string, patient_id: string, confirmationToken: string): Promise<void> {
+    if (!confirmationToken) throw new Error("Se requiere confirmar la eliminación y sus datos relacionados.");
+    await apiClient.delete(`/companies/${company_id}/employees/${patient_id}?confirmed=true&confirmation_token=${encodeURIComponent(confirmationToken)}`, {
       withCredentials: true,
     });
   },
@@ -57,9 +57,9 @@ export const dataService = {
   /**
    * Eliminar usuario (admin) - borra en cascada professionals/patients/companies
    */
-  async deleteUser(user_id: string, confirmed = false): Promise<void> {
-    if (!confirmed) throw new Error("Se requiere confirmar la eliminación y sus datos relacionados.");
-    await apiClient.delete(`/admin/users/delete/${user_id}?confirmed=true`, {
+  async deleteUser(user_id: string, confirmationToken: string): Promise<void> {
+    if (!confirmationToken) throw new Error("Se requiere confirmar la eliminación y sus datos relacionados.");
+    await apiClient.delete(`/admin/users/delete/${user_id}?confirmed=true&confirmation_token=${encodeURIComponent(confirmationToken)}`, {
       withCredentials: true,
     });
   },
@@ -69,9 +69,9 @@ export const dataService = {
     return response.data;
   },
 
-  async deletePatient(patientId: string, confirmed = false): Promise<void> {
-    if (!confirmed) throw new Error("Se requiere confirmar la eliminación y sus datos relacionados.");
-    await apiClient.delete(`/patients/${patientId}?confirmed=true`, {withCredentials: true});
+  async deletePatient(patientId: string, confirmationToken: string): Promise<void> {
+    if (!confirmationToken) throw new Error("Se requiere confirmar la eliminación y sus datos relacionados.");
+    await apiClient.delete(`/patients/${patientId}?confirmed=true&confirmation_token=${encodeURIComponent(confirmationToken)}`, {withCredentials: true});
   },
 
   async getCompanyDeletionSummary(companyId: string): Promise<any> {
@@ -79,9 +79,9 @@ export const dataService = {
     return response.data;
   },
 
-  async deleteCompany(companyId: string, confirmed = false): Promise<void> {
-    if (!confirmed) throw new Error("Se requiere confirmar la eliminación y sus datos relacionados.");
-    await apiClient.delete(`/companies/${companyId}?confirmed=true`, {withCredentials: true});
+  async deleteCompany(companyId: string, confirmationToken: string): Promise<void> {
+    if (!confirmationToken) throw new Error("Se requiere confirmar la eliminación y sus datos relacionados.");
+    await apiClient.delete(`/companies/${companyId}?confirmed=true&confirmation_token=${encodeURIComponent(confirmationToken)}`, {withCredentials: true});
   },
 
   async getUserDeletionSummary(userId: string): Promise<any> {
