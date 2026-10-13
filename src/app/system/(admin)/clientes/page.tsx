@@ -219,7 +219,7 @@ export default function ClientesAdminPage() {
                             const related = summary.related_data?.filter((item: {count: number}) => item.count > 0).map((item: {table: string; count: number}) => `• ${item.count} × ${relatedTableLabel(item.table)}`).join("\n") || "Sin otros registros asociados.";
                             const confirmed = window.confirm(`Vas a eliminar definitivamente la empresa "${summary.company_name}" y todos sus datos.\n\nTambién se eliminarán ${summary.employee_count} empleados:\n${employees}\n\nDatos relacionados:\n${related}\n\n¿Confirmás que se borre todo?`);
                             if (!confirmed) return;
-                            await dataService.deleteCompany(row.id, true);
+                            await dataService.deleteCompany(row.id, summary.confirmation_token);
                             setCompanies((current) => current.filter((company) => company.id !== row.id));
                             setPatients((current) => current.filter((patient) => patient.company_id !== row.id));
                           } catch { setActionMessage("No se pudo eliminar la empresa y sus datos relacionados."); }
@@ -273,7 +273,7 @@ export default function ClientesAdminPage() {
                             const related = summary.related_data?.filter((item: {count: number}) => item.count > 0).map((item: {table: string; count: number}) => `• ${item.count} × ${relatedTableLabel(item.table)}`).join("\n") || "Sin otros registros asociados.";
                             const confirmed = window.confirm(`Vas a eliminar definitivamente al paciente "${summary.patient_name}" y su cuenta, junto con todos los datos asociados:\n\n${related}\n\n¿Confirmás que se borre todo?`);
                             if (!confirmed) return;
-                            await dataService.deletePatient(row.id, true);
+                            await dataService.deletePatient(row.id, summary.confirmation_token);
                             setPatients((current) => current.filter((patient) => patient.id !== row.id));
                           } catch { setActionMessage("No se pudo eliminar el paciente y sus datos relacionados."); }
                         }}>Eliminar</button>
