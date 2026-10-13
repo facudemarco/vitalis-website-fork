@@ -92,10 +92,13 @@ export interface UserCompany {
   name: string;
   company_phone: string;
   company_address: string;
+  address?: string;
   first_name?: string;
   last_name?: string;
   role: "company";
   phone?: string;
+  owner_user_id?: string;
+  is_active?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -112,11 +115,14 @@ export interface UserPatient {
   user_id: string;
   social_security: string;
   phone: string;
+  address?: string;
   insurance?: string;
   company_id?: string | null;
   createdAt?: string;
   updatedAt?: string;
   study_type?: string;
+  company_name?: string | null;
+  is_active?: boolean;
 }
 
 export interface UserProfile {

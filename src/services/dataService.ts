@@ -47,8 +47,9 @@ export const dataService = {
   /**
    * Eliminar paciente
    */
-  async deletePatientCompany(company_id: string, patient_id: string): Promise<void> {
-    await apiClient.delete(`/companies/${company_id}/employees/${patient_id}`, {
+  async deletePatientCompany(company_id: string, patient_id: string, confirmationToken: string): Promise<void> {
+    if (!confirmationToken) throw new Error("Se requiere confirmar la eliminación y sus datos relacionados.");
+    await apiClient.delete(`/companies/${company_id}/employees/${patient_id}?confirmed=true&confirmation_token=${encodeURIComponent(confirmationToken)}`, {
       withCredentials: true,
     });
   },
@@ -56,9 +57,55 @@ export const dataService = {
   /**
    * Eliminar usuario (admin) - borra en cascada professionals/patients/companies
    */
-  async deleteUser(user_id: string): Promise<void> {
-    await apiClient.delete(`/admin/users/delete/${user_id}`, {
+  async deleteUser(user_id: string, confirmationToken: string): Promise<void> {
+    if (!confirmationToken) throw new Error("Se requiere confirmar la eliminación y sus datos relacionados.");
+    await apiClient.delete(`/admin/users/delete/${user_id}?confirmed=true&confirmation_token=${encodeURIComponent(confirmationToken)}`, {
       withCredentials: true,
+    });
+  },
+
+  async getPatientDeletionSummary(patientId: string): Promise<any> {
+    const response = await apiClient.get(`/patients/${patientId}/deletion-summary`, {withCredentials: true});
+    return response.data;
+  },
+
+  async deletePatient(patientId: string, confirmationToken: string): Promise<void> {
+    if (!confirmationToken) throw new Error("Se requiere confirmar la eliminación y sus datos relacionados.");
+    await apiClient.delete(`/patients/${patientId}?confirmed=true&confirmation_token=${encodeURIComponent(confirmationToken)}`, {withCredentials: true});
+  },
+
+  async getCompanyDeletionSummary(companyId: string): Promise<any> {
+    const response = await apiClient.get(`/companies/${companyId}/deletion-summary`, {withCredentials: true});
+    return response.data;
+  },
+
+  async deleteCompany(companyId: string, confirmationToken: string): Promise<void> {
+    if (!confirmationToken) throw new Error("Se requiere confirmar la eliminación y sus datos relacionados.");
+    await apiClient.delete(`/companies/${companyId}?confirmed=true&confirmation_token=${encodeURIComponent(confirmationToken)}`, {withCredentials: true});
+  },
+
+  async getUserDeletionSummary(userId: string): Promise<any> {
+    const response = await apiClient.get(`/admin/users/${userId}/deletion-summary`, {withCredentials: true});
+    return response.data;
+  },
+
+  /**
+   * Modificar los datos de un paciente (admin y secretaria).
+   */
+  async updatePatient(patientId: string, data: Partial<UserPatient>): Promise<UserPatient> {
+    const response = await apiClient.put(`/patients/${patientId}`, data, {
+      withCredentials: true,
+    });
+    return response.data as UserPatient;
+  },
+
+  /**
+   * Actualizar el perfil de una empresa (admin y secretaria).
+   */
+  async updateCompanyProfile(ownerUserId: string, formData: FormData): Promise<void> {
+    await apiClient.put(`/admin/users/company/${ownerUserId}`, formData, {
+      withCredentials: true,
+      headers: {"Content-Type": "multipart/form-data"},
     });
   },
 
@@ -490,7 +537,7 @@ export const dataService = {
    * Actualizar estado activo/inactivo de un usuario (Admin)
    */
   async updateUserStatus(userId: string, isActive: boolean): Promise<any> {
-    const response = await apiClient.patch(`/users/${userId}?is_active=${isActive}`, null, {
+    const response = await apiClient.patch(`/admin/users/${userId}?is_active=${isActive}`, null, {
       withCredentials: true,
     });
 
