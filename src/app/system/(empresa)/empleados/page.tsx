@@ -2,30 +2,21 @@
 import Link from "next/link";
 import {useEffect, useState} from "react";
 
-import {UserPatient, UserProfile} from "@/types";
-
+import {UserPatient} from "@/types";
 import {Users} from "@/components/ui/Icons";
 import {dataService} from "@/services/dataService";
-import {authService} from "@/services/authService";
 
 import Panel from "../../components/Panel";
 
 export default function EmpleadosPage() {
   const [loading, setLoading] = useState(true);
   const [employees, setEmployees] = useState<UserPatient[]>([]);
-  const [profile, setProfile] = useState<UserProfile>();
 
   useEffect(() => {
     const data = async () => {
       try {
-        const {profile} = await authService.getCurrentUser();
-
-        setProfile(profile);
-
         const res = await dataService.getPatientsFilters();
-
         setEmployees(res);
-        setLoading(false);
       } catch (error) {
         console.error(error);
       } finally {
@@ -35,8 +26,6 @@ export default function EmpleadosPage() {
 
     void data();
   }, []);
-
-
 
   if (loading)
     return (
@@ -68,10 +57,9 @@ export default function EmpleadosPage() {
               </th>
             </tr>
           </thead>
-
           <tbody>
-            {employees.map((row, idx) => (
-              <tr key={idx} className="border-t border-[#4A4A4A] bg-[#333333] text-white">
+            {employees.map((row) => (
+              <tr key={row.id} className="border-t border-[#4A4A4A] bg-[#333333] text-white">
                 <td className="border-r border-[#4A4A4A] px-3 py-2">{row.first_name}</td>
                 <td className="border-r border-[#4A4A4A] px-3 py-2">{row.dni}</td>
                 <td className="border-r border-[#4A4A4A] px-3 py-2">{row.date_of_birth}</td>
@@ -80,8 +68,10 @@ export default function EmpleadosPage() {
                 <td className="border-r border-[#4A4A4A] px-3 py-2 text-center underline">
                   <Link href={`/system/empleados/${row.id}`}>Ver</Link>
                 </td>
-                <td className="px-3 py-2 text-center underline">
- table>
+              </tr>
+            ))}
+          </tbody>
+        </table>
         {employees.length === 0 && <p className="mx-auto text-xl">No hay empleados cargados</p>}
       </div>
     </Panel>
