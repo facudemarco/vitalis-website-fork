@@ -252,14 +252,14 @@ export default function ClientesAdminPage() {
 
               {isEmpresas && filteredCompanies.length === 0 && (
                 <tr className="border-t border-[#4A4A4A] bg-[#333333] text-white">
-                  <td className="px-3 py-4 text-center" colSpan={6}>
+                  <td className="px-3 py-4 text-center" colSpan={canEdit ? 7 : 6}>
                     No se encontraron empresas{search ? ` para "${search}"` : ""}.
                   </td>
                 </tr>
               )}
               {!isEmpresas && filteredPatients.length === 0 && (
                 <tr className="border-t border-[#4A4A4A] bg-[#333333] text-white">
-                  <td className="px-3 py-4 text-center" colSpan={9}>
+                  <td className="px-3 py-4 text-center" colSpan={canEdit ? 10 : 9}>
                     No se encontraron pacientes{search ? ` para "${search}"` : ""}.
                   </td>
                 </tr>
