@@ -537,7 +537,7 @@ export const dataService = {
    * Actualizar estado activo/inactivo de un usuario (Admin)
    */
   async updateUserStatus(userId: string, isActive: boolean): Promise<any> {
-    const response = await apiClient.patch(`/users/${userId}?is_active=${isActive}`, null, {
+    const response = await apiClient.patch(`/admin/users/${userId}?is_active=${isActive}`, null, {
       withCredentials: true,
     });
 
