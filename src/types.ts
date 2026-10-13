@@ -96,6 +96,8 @@ export interface UserCompany {
   last_name?: string;
   role: "company";
   phone?: string;
+  owner_user_id?: string;
+  is_active?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -117,6 +119,8 @@ export interface UserPatient {
   createdAt?: string;
   updatedAt?: string;
   study_type?: string;
+  company_name?: string | null;
+  is_active?: boolean;
 }
 
 export interface UserProfile {
