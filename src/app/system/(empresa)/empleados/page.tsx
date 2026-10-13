@@ -36,17 +36,7 @@ export default function EmpleadosPage() {
     void data();
   }, []);
 
-  const deleteUser = async (user_id: string) => {
-    try {
-      if (!profile?.company_id) return;
-      await dataService.deletePatientCompany(profile.company_id, user_id);
-      setEmployees(employees.filter((employee) => employee.user_id !== user_id));
-      alert("Empleado eliminado correctamente");
-      window.location.reload();
-    } catch (error) {
-      console.error(error);
-    }
-  };
+
 
   if (loading)
     return (
@@ -76,7 +66,6 @@ export default function EmpleadosPage() {
               <th className="border-r border-[#4A4A4A] px-3 py-2 text-center text-wrap">
                 Historial de resultados
               </th>
-              <th className="px-3 py-2 text-center">Eliminar</th>
             </tr>
           </thead>
 
@@ -92,26 +81,7 @@ export default function EmpleadosPage() {
                   <Link href={`/system/empleados/${row.id}`}>Ver</Link>
                 </td>
                 <td className="px-3 py-2 text-center underline">
-                  <button
-                    className="cursor-pointer"
-                    onClick={() => {
-                      void deleteUser(row.id);
-                    }}
-                  >
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                      />
-                    </svg>
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+ table>
         {employees.length === 0 && <p className="mx-auto text-xl">No hay empleados cargados</p>}
       </div>
     </Panel>
