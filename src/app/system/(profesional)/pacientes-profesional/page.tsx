@@ -2,7 +2,7 @@
 import Link from "next/link";
 import {useEffect, useState} from "react";
 
-import {UserPatient} from "@/types";
+import {PatientWorkflowStatus, UserPatient} from "@/types";
 
 import {Pacientes} from "@/components/ui/Icons";
 import {dataService} from "@/services/dataService";
@@ -13,9 +13,11 @@ export default function PacientesProfesional() {
   const [patients, setPatients] = useState<UserPatient[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchName, setSearchName] = useState("");
+  const [statusFilter, setStatusFilter] = useState<PatientWorkflowStatus | "">("");
 
   const filteredPatients = patients.filter((patient) =>
-    patient.first_name.toLowerCase().includes(searchName.toLowerCase()),
+    patient.first_name.toLowerCase().includes(searchName.toLowerCase()) &&
+    (!statusFilter || (patient.patient_status ?? "En proceso") === statusFilter),
   );
 
   useEffect(() => {
@@ -102,6 +104,14 @@ export default function PacientesProfesional() {
         value={searchName}
         onChange={(e) => setSearchName(e.target.value)}
       />
+      <label className="mb-4 flex items-center gap-2 text-sm">
+        Filtrar por estado
+        <select className="rounded-md border border-[#4A4A4A] bg-white px-3 py-2 text-black" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as PatientWorkflowStatus | "")}>
+          <option value="">Todos los estados</option>
+          <option value="Completado">Completado</option>
+          <option value="En proceso">En proceso</option>
+        </select>
+      </label>
       <table className="w-full text-xs">
         <thead>
           <tr className="bg-[#3A3A3A] text-white">
@@ -110,7 +120,7 @@ export default function PacientesProfesional() {
             <th className="border-r border-[#4A4A4A] px-3 py-2 text-left">DNI</th>
             <th className="border-r border-[#4A4A4A] px-3 py-2 text-left">Tipo</th>
             <th className="border-r border-[#4A4A4A] px-3 py-2 text-left">Empresa</th>
-            <th className="border-r border-[#4A4A4A] px-3 py-2 text-left">Fecha de nacimiento</th>
+            <th className="border-r border-[#4A4A4A] px-3 py-2 text-left">Estado</th>
             <th className="border-r border-[#4A4A4A] px-3 py-2 text-left">Obra social</th>
             <th className="border-r border-[#4A4A4A] px-3 py-2 text-center text-wrap">
               Historial de resultados
@@ -133,7 +143,7 @@ export default function PacientesProfesional() {
               <td className="border-r border-[#4A4A4A] px-3 py-2">
                 {row.company_id ? row.company_name || "Empresa sin nombre" : "No aplica"}
               </td>
-              <td className="border-r border-[#4A4A4A] px-3 py-2">{row.date_of_birth || "-"}</td>
+              <td className="border-r border-[#4A4A4A] px-3 py-2">{row.patient_status ?? "En proceso"}</td>
               <td className="border-r border-[#4A4A4A] px-3 py-2">{row.social_security || "-"}</td>
               <td className="border-r border-[#4A4A4A] px-3 py-2 text-center underline">
                 <Link href={`/system/pacientes-profesional/${row.id}`}>Ver</Link>
