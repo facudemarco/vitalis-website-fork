@@ -4,6 +4,7 @@ import type {
   UserPatient,
   UserProfessional,
   UserSecretary,
+  PatientWorkflowStatus,
   MedicalRecord,
   Studies,
   StudiesCategory,
@@ -531,6 +532,16 @@ export const dataService = {
     });
 
     return response.data as Ticket;
+  },
+
+  /**
+   * Actualizar estado de progreso del paciente (Admin y secretaría).
+   */
+  async updatePatientStatus(patientId: string, patientStatus: PatientWorkflowStatus): Promise<{patient_id: string; patient_status: PatientWorkflowStatus}> {
+    const response = await apiClient.patch(`/patients/${patientId}/status`, {patient_status: patientStatus}, {
+      withCredentials: true,
+    });
+    return response.data;
   },
 
   /**

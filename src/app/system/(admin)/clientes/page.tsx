@@ -3,7 +3,7 @@ import {useEffect, useState} from "react";
 import {useAuth} from "@/contexts/AuthContext";
 import Link from "next/link";
 
-import {UserCompany, UserPatient} from "@/types";
+import {PatientWorkflowStatus, UserCompany, UserPatient} from "@/types";
 
 import {Clients} from "@/components/ui/Icons";
 import {dataService} from "@/services/dataService";
@@ -67,6 +67,7 @@ export default function ClientesAdminPage() {
   const [companies, setCompanies] = useState<UserCompany[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [search, setSearch] = useState<string>("");
+  const [patientStatusFilter, setPatientStatusFilter] = useState<PatientWorkflowStatus | "">("");
   const {user} = useAuth();
   const isAdmin = user?.role === "admin";
   const canEdit = isAdmin || user?.role === "secretary";
@@ -108,11 +109,9 @@ export default function ClientesAdminPage() {
   const filteredPatients = patients.filter((p) => {
     const q = search.toLowerCase();
     const fullName = `${p.first_name ?? ""} ${p.last_name ?? ""}`.toLowerCase();
-    return (
-      p.first_name?.toLowerCase().includes(q) ||
-      p.last_name?.toLowerCase().includes(q) ||
-      fullName.includes(q)
-    );
+    const matchesSearch = p.first_name?.toLowerCase().includes(q) || p.last_name?.toLowerCase().includes(q) || fullName.includes(q);
+    const matchesStatus = !patientStatusFilter || (p.patient_status ?? "En proceso") === patientStatusFilter;
+    return matchesSearch && matchesStatus;
   });
 
   if (loading) {
@@ -156,6 +155,13 @@ export default function ClientesAdminPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          {!isEmpresas && (
+            <select className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-black sm:w-auto" aria-label="Filtrar pacientes por estado" value={patientStatusFilter} onChange={(event) => setPatientStatusFilter(event.target.value as PatientWorkflowStatus | "")}>
+              <option value="">Todos los estados</option>
+              <option value="Completado">Completado</option>
+              <option value="En proceso">En proceso</option>
+            </select>
+          )}
         </div>
 
         {/* Tabla */}
@@ -177,7 +183,7 @@ export default function ClientesAdminPage() {
                   <th className="px-3 py-2 text-left">Nombre</th>
                   <th className="px-3 py-2 text-left">Apellido</th>
                   <th className="px-3 py-2 text-left">DNI</th>
-                  <th className="px-3 py-2 text-left">Fecha de nacimiento</th>
+                  <th className="px-3 py-2 text-left">Estado</th>
                   <th className="px-3 py-2 text-left">Teléfono</th>
                   <th className="px-3 py-2 text-left">Obra social</th>
                   <th className="px-3 py-2 text-left">Resultados</th>
@@ -241,7 +247,23 @@ export default function ClientesAdminPage() {
                       <td className="px-3 py-2">{row.first_name || "-"}</td>
                       <td className="px-3 py-2">{row.last_name || "-"}</td>
                       <td className="px-3 py-2">{row.dni || "-"}</td>
-                      <td className="px-3 py-2">{row.date_of_birth || "-"}</td>
+                      <td className="px-3 py-2">
+                        {canEdit ? (
+                          <select className="rounded border border-gray-500 bg-[#333333] px-2 py-1 text-white" aria-label={`Estado de ${row.first_name ?? ""} ${row.last_name ?? ""}`} value={row.patient_status ?? "En proceso"} onChange={async (event) => {
+                            const patientStatus = event.target.value as PatientWorkflowStatus;
+                            try {
+                              await dataService.updatePatientStatus(row.id, patientStatus);
+                              setPatients((current) => current.map((patient) => patient.id === row.id ? {...patient, patient_status: patientStatus} : patient));
+                              setActionMessage("");
+                            } catch {
+                              setActionMessage("No se pudo actualizar el estado del paciente.");
+                            }
+                          }}>
+                            <option value="Completado">Completado</option>
+                            <option value="En proceso">En proceso</option>
+                          </select>
+                        ) : row.patient_status ?? "En proceso"}
+                      </td>
                       <td className="px-3 py-2">{row.phone || "-"}</td>
                       <td className="px-3 py-2">{row.social_security || "-"}</td>
                       <td className="px-3 py-2">
