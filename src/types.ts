@@ -103,6 +103,8 @@ export interface UserCompany {
   updatedAt?: string;
 }
 
+export type PatientWorkflowStatus = "Completado" | "En proceso";
+
 export interface UserPatient {
   id: string;
   email: string;
@@ -123,6 +125,7 @@ export interface UserPatient {
   study_type?: string;
   company_name?: string | null;
   is_active?: boolean;
+  patient_status?: PatientWorkflowStatus;
 }
 
 export interface UserProfile {
