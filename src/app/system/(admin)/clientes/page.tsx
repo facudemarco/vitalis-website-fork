@@ -166,7 +166,7 @@ export default function ClientesAdminPage() {
 
         {/* Tabla */}
         <div className="overflow-x-auto">
-          <table className="w-full text-xs">
+          <table className={`w-full text-xs ${isEmpresas ? "" : "table-fixed"}`}>
             <thead>
               {isEmpresas ? (
                 <tr className="my-2 bg-[#3A3A3A] text-white">
@@ -180,16 +180,16 @@ export default function ClientesAdminPage() {
                 </tr>
               ) : (
                 <tr className="bg-[#3A3A3A] text-white">
-                  <th className="px-3 py-2 text-left">Nombre</th>
-                  <th className="px-3 py-2 text-left">Apellido</th>
-                  <th className="px-3 py-2 text-left">DNI</th>
-                  <th className="px-3 py-2 text-left">Estado</th>
-                  <th className="px-3 py-2 text-left">Teléfono</th>
-                  <th className="px-3 py-2 text-left">Obra social</th>
-                  <th className="px-3 py-2 text-left">Resultados</th>
-                  <th className="px-3 py-2 text-left">Ficha</th>
-                  <th className="px-3 py-2 text-left">Tipo de estudio</th>
-                  {canEdit && <th className="px-3 py-2 text-left">Acciones</th>}
+                  <th className="w-[9%] px-2 py-2 text-left">Nombre</th>
+                  <th className="w-[9%] px-2 py-2 text-left">Apellido</th>
+                  <th className="w-[7%] px-2 py-2 text-left">DNI</th>
+                  <th className="w-[14%] px-2 py-2 text-left">Estado</th>
+                  <th className="w-[8%] px-2 py-2 text-left">Teléfono</th>
+                  <th className="w-[8%] px-2 py-2 text-left">Obra social</th>
+                  <th className="w-[8%] px-2 py-2 text-left">Resultados</th>
+                  <th className="w-[6%] px-2 py-2 text-left">Ficha</th>
+                  <th className="w-[19%] px-2 py-2 text-left">Tipo de estudio</th>
+                  {canEdit && <th className="w-[12%] px-2 py-2 text-left">Acciones</th>}
                 </tr>
               )}
             </thead>
@@ -244,10 +244,10 @@ export default function ClientesAdminPage() {
                       key={idx}
                       className="text-md border-t border-[#4A4A4A] bg-[#333333] text-white"
                     >
-                      <td className="px-3 py-2">{row.first_name || "-"}</td>
-                      <td className="px-3 py-2">{row.last_name || "-"}</td>
-                      <td className="px-3 py-2">{row.dni || "-"}</td>
-                      <td className="px-3 py-2">
+                      <td className="px-2 py-2 break-words">{row.first_name || "-"}</td>
+                      <td className="px-2 py-2 break-words">{row.last_name || "-"}</td>
+                      <td className="px-2 py-2 break-words">{row.dni || "-"}</td>
+                      <td className="px-2 py-2 break-words">
                         {canEdit ? (
                           <select className="rounded border border-gray-500 bg-[#333333] px-2 py-1 text-white" aria-label={`Estado de ${row.first_name ?? ""} ${row.last_name ?? ""}`} value={row.patient_status ?? "En proceso"} onChange={async (event) => {
                             const patientStatus = event.target.value as PatientWorkflowStatus;
@@ -264,9 +264,9 @@ export default function ClientesAdminPage() {
                           </select>
                         ) : row.patient_status ?? "En proceso"}
                       </td>
-                      <td className="px-3 py-2">{row.phone || "-"}</td>
-                      <td className="px-3 py-2">{row.social_security || "-"}</td>
-                      <td className="px-3 py-2">
+                      <td className="px-2 py-2 break-words">{row.phone || "-"}</td>
+                      <td className="px-2 py-2 break-words">{row.social_security || "-"}</td>
+                      <td className="px-2 py-2 break-words">
                         <Link
                           className="cursor-pointer text-xs underline"
                           href={`/system/clientes/${row.id}`}
@@ -274,7 +274,7 @@ export default function ClientesAdminPage() {
                           Ver estud.
                         </Link>
                       </td>
-                      <td className="px-3 py-2">
+                      <td className="px-2 py-2 break-words">
                         <Link
                           className="cursor-pointer text-xs underline"
                           href={`/system/medical-history/${row.id}`}
@@ -283,13 +283,13 @@ export default function ClientesAdminPage() {
                         </Link>
                       </td>
                       <td
-                        className="cursor-help px-3 py-2 underline decoration-dotted"
+                        className="cursor-help break-words px-2 py-2 underline decoration-dotted"
                         title={getStudyDetail(row.study_type)}
                       >
                         {row.study_type ?? "-"}
                       </td>
-                      {canEdit && <td className="px-3 py-2 whitespace-nowrap">
-                        <button className="mr-3 underline" type="button" onClick={() => { setActionMessage(""); setEditingPatient(row); }}>Modificar</button>
+                      {canEdit && <td className="px-2 py-2 align-top">
+                        <button className="mr-2 underline" type="button" onClick={() => { setActionMessage(""); setEditingPatient(row); }}>Modificar</button>
                         {isAdmin && <button className="underline" type="button" onClick={async () => {
                           const nextStatus = row.is_active === false;
                           try { await dataService.updateUserStatus(row.user_id, nextStatus); setPatients((current) => current.map((patient) => patient.id === row.id ? {...patient, is_active: nextStatus} : patient)); }
