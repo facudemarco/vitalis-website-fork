@@ -49,6 +49,38 @@ export default function Footer() {
             <p className="font-bold">Teléfono de contacto</p>
           </div>
           <p className="pb-2 text-sm md:pb-0">+54 9 2475 40-6642</p>
+          <div className="flex items-center gap-2">
+            <svg
+              aria-hidden="true"
+              fill="none"
+              height="28"
+              viewBox="0 0 24 24"
+              width="28"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M3 5.5h18v13H3z"
+                stroke="black"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.8"
+              />
+              <path
+                d="m4 7 8 6 8-6"
+                stroke="black"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.8"
+              />
+            </svg>
+            <p className="font-bold">Correo de contacto</p>
+          </div>
+          <a
+            className="pb-2 text-sm md:pb-0"
+            href="mailto:vitaliscentrosalud@gmail.com"
+          >
+            vitaliscentrosalud@gmail.com
+          </a>
         </div>
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
