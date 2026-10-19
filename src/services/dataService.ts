@@ -129,7 +129,15 @@ export const dataService = {
       withCredentials: true,
     });
 
-    return response.data.studies_categories as StudiesCategory[];
+    // Older API versions return the database flag as 0/1 instead of a boolean.
+    const categories = response.data.studies_categories as Array<
+      Omit<StudiesCategory, "requires_report"> & {requires_report?: boolean | 0 | 1}
+    >;
+
+    return categories.map((category) => ({
+      ...category,
+      requires_report: Boolean(category.requires_report ?? true),
+    }));
   },
 
   /**
