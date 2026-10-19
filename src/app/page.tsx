@@ -146,6 +146,23 @@ export default function HomePage() {
           />
         </div>
       </section>
+      <section className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-12" id="contacto">
+        <h2 className="text-center text-3xl font-bold text-[#1F648B]">Contactanos</h2>
+        <div className="flex flex-col gap-6 rounded-xl bg-slate-50 p-6 text-center sm:p-8">
+          <div>
+            <p className="font-semibold">Para dudas y consultas:</p>
+            <p className="mt-2 break-words">
+              <a className="text-[#1F648B] underline" href="mailto:logistica@saludvitalis.org">logistica@saludvitalis.org</a>
+              {" / "}
+              <a className="text-[#1F648B] underline" href="mailto:vitaliscentrosalud@gmail.com">vitaliscentrosalud@gmail.com</a>
+            </p>
+          </div>
+          <div>
+            <p className="font-semibold">Para asuntos gerenciales y/o administrativos:</p>
+            <a className="mt-2 inline-block break-all text-[#1F648B] underline" href="mailto:administración@saludvitalis.org">administración@saludvitalis.org</a>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

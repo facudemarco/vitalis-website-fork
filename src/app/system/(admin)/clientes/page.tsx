@@ -164,6 +164,16 @@ export default function ClientesAdminPage() {
           )}
         </div>
 
+        {!isEmpresas && canEdit && (
+          <p className="mb-3 px-1 text-sm text-gray-700">
+            Al marcar Completado, la empresa podrá ver al empleado y sus resultados.
+            Confirmá que estén cargados todos los estudios solicitados. {isAdmin
+              ? "Como administrador podés autorizar Completado aunque falten estudios, archivos o informes."
+              : "Si faltan estudios, archivos o informes obligatorios, hablá con un administrador para autorizar la excepción."}
+            En proceso mantiene al empleado oculto para la empresa.
+          </p>
+        )}
+
         {/* Tabla */}
         <div className="overflow-x-auto">
           <table className={`w-full text-xs ${isEmpresas ? "" : "table-fixed"}`}>
@@ -255,8 +265,9 @@ export default function ClientesAdminPage() {
                               await dataService.updatePatientStatus(row.id, patientStatus);
                               setPatients((current) => current.map((patient) => patient.id === row.id ? {...patient, patient_status: patientStatus} : patient));
                               setActionMessage("");
-                            } catch {
-                              setActionMessage("No se pudo actualizar el estado del paciente.");
+                            } catch (error) {
+                              const detail = (error as {response?: {data?: {detail?: unknown}}})?.response?.data?.detail;
+                              setActionMessage(typeof detail === "string" ? detail : "No se pudo actualizar el estado del paciente.");
                             }
                           }}>
                             <option value="Completado">Completado</option>
