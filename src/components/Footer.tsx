@@ -75,12 +75,17 @@ export default function Footer() {
             </svg>
             <p className="font-bold">Correo de contacto</p>
           </div>
-          <a
-            className="pb-2 text-sm md:pb-0"
-            href="mailto:vitaliscentrosalud@gmail.com"
-          >
-            vitaliscentrosalud@gmail.com
-          </a>
+          <div className="flex max-w-sm flex-col gap-3 pb-2 text-sm md:pb-0">
+            <div>
+              <p className="font-semibold">Para dudas y consultas:</p>
+              <a className="block break-all underline" href="mailto:logistica@saludvitalis.org">logistica@saludvitalis.org</a>
+              <a className="block break-all underline" href="mailto:vitaliscentrosalud@gmail.com">vitaliscentrosalud@gmail.com</a>
+            </div>
+            <div>
+              <p className="font-semibold">Para asuntos gerenciales y/o administrativos:</p>
+              <a className="block break-all underline" href="mailto:administración@saludvitalis.org">administración@saludvitalis.org</a>
+            </div>
+          </div>
         </div>
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
