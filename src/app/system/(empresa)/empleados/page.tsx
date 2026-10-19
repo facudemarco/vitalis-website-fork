@@ -16,7 +16,7 @@ export default function EmpleadosPage() {
     const data = async () => {
       try {
         const res = await dataService.getPatientsFilters();
-        setEmployees(res);
+        setEmployees(res.filter((employee) => employee.patient_status === "Completado"));
       } catch (error) {
         console.error(error);
       } finally {
@@ -72,7 +72,7 @@ export default function EmpleadosPage() {
             ))}
           </tbody>
         </table>
-        {employees.length === 0 && <p className="mx-auto text-xl">No hay empleados cargados</p>}
+        {employees.length === 0 && <p className="mx-auto text-xl">No hay empleados con estudios completos disponibles.</p>}
       </div>
     </Panel>
   );

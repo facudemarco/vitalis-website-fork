@@ -143,7 +143,11 @@ export default function PacientesProfesional() {
               <td className="border-r border-[#4A4A4A] px-3 py-2">
                 {row.company_id ? row.company_name || "Empresa sin nombre" : "No aplica"}
               </td>
-              <td className="border-r border-[#4A4A4A] px-3 py-2">{row.patient_status ?? "En proceso"}</td>
+              <td className="border-r border-[#4A4A4A] px-3 py-2">
+                <span className={`inline-flex rounded-full px-3 py-1 font-semibold ${row.patient_status === "Completado" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                  {row.patient_status ?? "En proceso"}
+                </span>
+              </td>
               <td className="border-r border-[#4A4A4A] px-3 py-2">{row.social_security || "-"}</td>
               <td className="border-r border-[#4A4A4A] px-3 py-2 text-center underline">
                 <Link href={`/system/pacientes-profesional/${row.id}`}>Ver</Link>

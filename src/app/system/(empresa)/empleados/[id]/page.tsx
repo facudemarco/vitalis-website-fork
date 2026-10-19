@@ -21,17 +21,26 @@ export default function EstudiosPacientesPage({params}: PageProps) {
   const id = use(params).id;
   const [studies, setStudies] = useState<Studies[]>([]);
   const [downloadingHistory, setDownloadingHistory] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     const data = async () => {
+      setData(null);
+      setStudies([]);
+      setLoadError(false);
       try {
         const res = await dataService.getPatientById(id);
+        if (res.patient_status !== "Completado") {
+          setLoadError(true);
+          return;
+        }
         const studies = await dataService.getStudiesByPatientId(id);
 
         setData(res);
         setStudies(studies);
       } catch (error) {
         console.error(error);
+        setLoadError(true);
       }
     };
 
@@ -66,7 +75,12 @@ export default function EstudiosPacientesPage({params}: PageProps) {
   if (!data) {
     return (
       <Panel pageIcon={<Clients />} pageTitle="Historial de estudios">
-        <p>Cargando...</p>
+        {loadError ? (
+          <div>
+            <p>El empleado no está disponible. Sus estudios deben ser habilitados por administración o secretaría.</p>
+            <Link className="mt-4 inline-block underline" href="/system/empleados">Volver a empleados</Link>
+          </div>
+        ) : <p>Cargando...</p>}
       </Panel>
     );
   }
