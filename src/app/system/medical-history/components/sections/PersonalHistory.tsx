@@ -163,30 +163,30 @@ export const PersonalHistorySection = React.memo(({defaultValues, registerSectio
                 )}
               />
             </div>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <div className="flex flex-col gap-2 border-b border-gray-200 pb-3">
+            <div className="mt-4 flex flex-col gap-3">
+              <div className="border-b border-gray-200 pb-3">
                 <div className="flex items-center">
-                  <span className="flex-1 text-base">Medicamentos</span>
+                  <p className="flex-1">Medicamentos</p>
                   <Controller control={control} name="medications" render={({field: {onChange, value}}) => (
-                    <div className="flex gap-4">
-                      <label className="flex items-center gap-1"><input checked={value === true} type="radio" onChange={() => onChange(true)} /> Sí</label>
-                      <label className="flex items-center gap-1"><input checked={value === false} type="radio" onChange={() => onChange(false)} /> No</label>
+                    <div className="flex gap-3">
+                      <input aria-label="Medicamentos: sí" checked={value === true} className="h-6 w-6 cursor-pointer" type="radio" onChange={() => onChange(true)} />
+                      <input aria-label="Medicamentos: no" checked={value === false} className="h-6 w-6 cursor-pointer" type="radio" onChange={() => onChange(false)} />
                     </div>
                   )} />
                 </div>
-                <input className="w-full border border-gray-500 p-2" placeholder="¿Cuáles medicamentos?" {...register("medications_details")} />
+                <input className="mt-2 w-full border border-gray-500 p-1" placeholder="¿Cuáles medicamentos?" {...register("medications_details")} />
               </div>
-              <div className="flex flex-col gap-2 border-b border-gray-200 pb-3">
+              <div className="border-b border-gray-200 pb-3">
                 <div className="flex items-center">
-                  <span className="flex-1 text-base">Malformaciones</span>
+                  <p className="flex-1">Malformaciones</p>
                   <Controller control={control} name="malformations" render={({field: {onChange, value}}) => (
-                    <div className="flex gap-4">
-                      <label className="flex items-center gap-1"><input checked={value === true} type="radio" onChange={() => onChange(true)} /> Sí</label>
-                      <label className="flex items-center gap-1"><input checked={value === false} type="radio" onChange={() => onChange(false)} /> No</label>
+                    <div className="flex gap-3">
+                      <input aria-label="Malformaciones: sí" checked={value === true} className="h-6 w-6 cursor-pointer" type="radio" onChange={() => onChange(true)} />
+                      <input aria-label="Malformaciones: no" checked={value === false} className="h-6 w-6 cursor-pointer" type="radio" onChange={() => onChange(false)} />
                     </div>
                   )} />
                 </div>
-                <input className="w-full border border-gray-500 p-2" placeholder="¿Cuáles malformaciones?" {...register("malformations_details")} />
+                <input className="mt-2 w-full border border-gray-500 p-1" placeholder="¿Cuáles malformaciones?" {...register("malformations_details")} />
               </div>
             </div>
           </div>
