@@ -612,6 +612,7 @@ export interface MedicalRecordHeadExam {
   tumoraciones_tiroideas: boolean;
   adenopatias: boolean;
   observations: string;
+  mallampati?: string | null;
 }
 
 export interface MedicalRecordSurgerys {
