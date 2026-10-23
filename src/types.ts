@@ -92,6 +92,7 @@ export interface UserCompany {
   name: string;
   company_phone: string;
   company_address: string;
+  address?: string;
   first_name?: string;
   last_name?: string;
   role: "company";
@@ -118,6 +119,7 @@ export interface UserPatient {
   company_id?: string | null;
   company_name?: string | null;
   patient_status?: PatientWorkflowStatus | null;
+  is_active?: boolean;
   createdAt?: string;
   updatedAt?: string;
   study_type?: string;
