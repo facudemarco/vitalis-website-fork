@@ -86,6 +86,7 @@ export interface UserCompany {
   password: string;
   company_name: string;
   company_id?: string;
+  owner_user_id?: string;
   responsable_name: string;
   cuit: string;
   name: string;
