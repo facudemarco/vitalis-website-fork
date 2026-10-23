@@ -166,9 +166,9 @@ export default function MedicalHistoryPage({params}: PageProps) {
         setLoading(true);
         setError(null);
 
-        const [records, patients] = await Promise.all([dataService.getMedicalRecord(patientId), dataService.getPatients()]);
+        const [records, patients] = await Promise.all([dataService.getMedicalRecord(patientId), dataService.getPatients().catch(() => [])]);
         const patient = patients.find((item) => item.id === patientId || item.user_id === patientId);
-        setPatientCompanyName(patient?.company_name || (patient?.company_id ? "" : "Particular"));
+        setPatientCompanyName(patient?.company_name || (patient?.company_id ? "Empresa" : "Particular"));
         const active = records[0] || ({} as MedicalRecord);
 
         setMedicalRecord(active);
