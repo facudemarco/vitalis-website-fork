@@ -86,7 +86,6 @@ export const CuestionarioRiesgoSection = React.memo(
     const {
       getValues: getCuestionarioValues,
       trigger: triggerCuestionario,
-      register: registerCuestionarioField,
     } = cuestionarioForm;
 
     // Form for DDJJ
