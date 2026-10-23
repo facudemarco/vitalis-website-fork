@@ -717,6 +717,7 @@ export interface MedicalRecord {
   fecha_medico_evaluador?: string | null;
   firma_medico_evaluador?: string | null;
   fecha_medico_laboral?: string | null;
+  firma_medico_laboral?: string | null;
 }
 
 export interface Ticket {
