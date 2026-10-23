@@ -574,9 +574,6 @@ export default function MedicalHistoryPage({params}: PageProps) {
             defaultValuesDDJJ={medicalRecord.medical_record_ddjj ?? null}
             defaultValuesNeuro={medicalRecord.medical_record_neuro_medical_exam ?? null}
             defaultValuesOftalmo={medicalRecord.medical_record_oftalmologico_medical_exam ?? null}
-            existingMedicoSignatureUrl={
-              medicalRecord.medical_record_medical_responsable_signatures?.url ?? null
-            }
             registerCuestionario={(handler) =>
               registry.register("medical_record_cuestionario_riesgos", handler)
             }
