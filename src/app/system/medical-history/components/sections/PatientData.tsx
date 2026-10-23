@@ -15,7 +15,7 @@ interface Props {
 export const PatientDataSection = React.memo(
   ({defaultValues, registerSection, currentImageUrl, onImageChange}: Props) => {
     const form = useForm<MedicalRecordData>({
-      defaultValues: defaultValues ?? ({} as MedicalRecordData),
+      defaultValues: {company_name: defaultValues?.company_name || "Particular", ...defaultValues} as MedicalRecordData,
       mode: "onBlur",
     });
 
