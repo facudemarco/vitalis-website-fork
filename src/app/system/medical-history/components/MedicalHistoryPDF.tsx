@@ -1619,6 +1619,11 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
                 </Text>
               </View>
             </View>
+            {/* Firma del trabajador */}
+            <View style={{flex: 1, paddingLeft: 10, marginTop: 10}}>
+              <Text style={{fontSize: 9, fontWeight: "bold"}}>Trabajador <Text style={{fontWeight: "normal"}}>Firma y aclaración</Text></Text>
+              {patient?.url ? <Image src={patient.url} style={{width: 150, height: 50, marginTop: 5}} /> : <Text style={{fontSize: 9, fontWeight: "bold", marginTop: 10, marginBottom: 10}}>Firma __________________</Text>}
+            </View>
           </View>
         </View>
       </Page>
