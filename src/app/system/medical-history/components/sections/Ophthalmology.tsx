@@ -1,5 +1,5 @@
 import React, {useEffect} from "react";
-import {useForm} from "react-hook-form";
+import {Controller, useForm} from "react-hook-form";
 import {MedicalRecordOphthalmology} from "@/types";
 import {AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
 import {SectionHandler} from "../../useFormRegistry";
@@ -30,16 +30,21 @@ const tables: Array<{title: string; fields: Array<[keyof MedicalRecordOphthalmol
 ];
 
 export const OphthalmologySection = React.memo(({defaultValues, registerSection}: Props) => {
-  const {register, getValues, trigger} = useForm<MedicalRecordOphthalmology>({
-    defaultValues: defaultValues ?? ({} as MedicalRecordOphthalmology), mode:"onBlur",
+  const booleanFields = ["consulted_ophthalmologist","vision_disease","vision_treatment","vision_surgery","glasses_or_contacts","medications","monocular_vision","anisometropia","ocular_movement_extrinsic","ocular_movement_intrinsic","fundus_dilation"] as const;
+  const toBool = (value: unknown) => value === true || value === "true" || value === 1;
+  const normalizedDefaults = defaultValues ? {...defaultValues, ...Object.fromEntries(booleanFields.map((field) => [field, defaultValues[field] == null ? undefined : toBool(defaultValues[field])]))} as MedicalRecordOphthalmology : null;
+  const {register, getValues, trigger, control} = useForm<MedicalRecordOphthalmology>({
+    defaultValues: normalizedDefaults ?? ({} as MedicalRecordOphthalmology), mode:"onBlur",
   });
   useEffect(() => registerSection({getValues, validate: async () => trigger()}), [registerSection,getValues,trigger]);
 
-  const radioRow = (name: keyof MedicalRecordOphthalmology, label: string) => (
+  const radioRow = (name: (typeof yesNoFields)[number][0], label: string) => (
     <div key={name} className="flex flex-wrap items-center gap-3 border-b py-2">
       <span className="min-w-48 flex-1 text-sm">{label}</span>
-      <label className="flex items-center gap-1 text-sm"><input type="radio" value="true" {...register(name)} />Sí</label>
-      <label className="flex items-center gap-1 text-sm"><input type="radio" value="false" {...register(name)} />No</label>
+      <Controller control={control} name={name} render={({field}) => <>
+        <label className="flex items-center gap-1 text-sm"><input checked={field.value === true} type="radio" onChange={() => field.onChange(true)} />Sí</label>
+        <label className="flex items-center gap-1 text-sm"><input checked={field.value === false} type="radio" onChange={() => field.onChange(false)} />No</label>
+      </>} />
     </div>
   );
 
