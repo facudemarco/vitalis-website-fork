@@ -241,11 +241,14 @@ export const ImmunizationsSection = React.memo(({defaultValues, registerSection}
             />
             <span />
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {(["fiebre_amarilla","meningitis"] as const).map((field) => <label key={field} className="flex items-center gap-2 text-lg">
-              <input type="checkbox" {...register(field)} />{field === "fiebre_amarilla" ? "Fiebre amarilla" : "Meningitis"}
-            </label>)}
-          </div>
+          {(["fiebre_amarilla","meningitis"] as const).map((field) => <div key={field} className="grid grid-cols-[260px_120px_1fr] items-center py-2">
+            <span className="text-lg">{field === "fiebre_amarilla" ? "Fiebre amarilla" : "Meningitis"}</span>
+            <Controller control={control} name={field} render={({field: {onChange,value}}) => <div className="flex justify-center gap-8">
+              <label className="flex items-center gap-1"><input checked={value === true} className="radio" type="radio" onChange={() => onChange(true)} />Sí</label>
+              <label className="flex items-center gap-1"><input checked={value === false} className="radio" type="radio" onChange={() => onChange(false)} />No</label>
+            </div>} />
+            <span />
+          </div>)}
         </div>
       </AccordionContent>
     </AccordionItem>
