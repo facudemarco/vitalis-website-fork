@@ -141,6 +141,7 @@ export default function MedicalHistoryPage({params}: PageProps) {
   );
   const [editEvaluatorSig, setEditEvaluatorSig] = useState(false);
   const [editLaboralSig, setEditLaboralSig] = useState(false);
+  const [editPatientSig, setEditPatientSig] = useState(false);
 
   const registry = useFormRegistry<MedicalRecord>();
 
@@ -572,9 +573,6 @@ export default function MedicalHistoryPage({params}: PageProps) {
             existingMedicoSignatureUrl={
               medicalRecord.medical_record_medical_responsable_signatures?.url ?? null
             }
-            existingTrabajadorSignatureUrl={
-              medicalRecord.medical_record_patient_signatures?.url ?? null
-            }
             registerCuestionario={(handler) =>
               registry.register("medical_record_cuestionario_riesgos", handler)
             }
@@ -585,8 +583,6 @@ export default function MedicalHistoryPage({params}: PageProps) {
             registerOftalmo={(handler) =>
               registry.register("medical_record_oftalmologico_medical_exam", handler)
             }
-            onSaveMedicoSignature={(blob) => setMedicoResponsableSignatureBlob(blob)}
-            onSaveTrabajadorSignature={(blob) => setPatientSignatureBlob(blob)}
           />
         </Accordion>
         <Accordion collapsible type="single">
@@ -726,6 +722,20 @@ export default function MedicalHistoryPage({params}: PageProps) {
                         </div>
                       )}
                     </div>
+<div className="space-y-4">
+                    <p className="text-lg font-semibold">Firma del trabajador</p>
+                    {(!medicalRecord.medical_record_patient_signatures?.url || editPatientSig) ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <CanvasFirm uploadOnSave={false} onSave={(blob) => setPatientSignatureBlob(blob)} />
+                        {medicalRecord.medical_record_patient_signatures?.url && <button className="text-sm text-red-500 hover:underline" type="button" onClick={() => { setEditPatientSig(false); setPatientSignatureBlob(null); }}>Cancelar cambio</button>}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2">
+                        <img alt="Firma del trabajador" className="max-h-32 border border-gray-200" src={medicalRecord.medical_record_patient_signatures.url} />
+                        <button className="text-sm text-blue-500 hover:underline" type="button" onClick={() => setEditPatientSig(true)}>Cambiar firma</button>
+                      </div>
+                    )}
+                  </div>
                   </div>
                 </div>
               </div>
