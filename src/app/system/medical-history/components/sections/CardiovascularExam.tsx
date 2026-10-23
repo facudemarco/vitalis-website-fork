@@ -240,6 +240,12 @@ export const CardiovascularExamSection = React.memo(({defaultValues, registerSec
               />
             </div>
 
+            <div className="flex items-center gap-4">
+              <span className="text-base font-semibold">HTA</span>
+              <Controller control={control} name="hta" render={({field}) => (
+                <div className="flex gap-4"><label className="flex items-center gap-1"><input type="radio" checked={field.value === true} onChange={() => field.onChange(true)} />Sí</label><label className="flex items-center gap-1"><input type="radio" checked={field.value === false} onChange={() => field.onChange(false)} />No</label></div>
+              )} />
+            </div>
             {/* Observaciones */}
             <div className="mt-4 flex flex-col gap-2">
               <span className="text-base font-semibold">Observaciones:</span>
