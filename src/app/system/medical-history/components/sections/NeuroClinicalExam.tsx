@@ -231,9 +231,9 @@ export const NeuroClinicalExamSection = React.memo(({defaultValues, registerSect
               />
             </div>
 
-            <div className="mt-6 overflow-x-auto">
+            <div className="mt-6 w-full">
               <h3 className="mb-2 font-semibold">Cuestionario STOP-BANG</h3>
-              <div className="min-w-[560px] rounded border">
+              <div className="w-full border border-gray-500">
                 {([
                   ["stop_bang_snoring","¿Ronca fuerte?"],
                   ["stop_bang_tiredness","¿Se siente cansado o somnoliento durante el día?"],
@@ -243,14 +243,14 @@ export const NeuroClinicalExamSection = React.memo(({defaultValues, registerSect
                   ["stop_bang_age_over_50","¿Tiene más de 50 años?"],
                   ["stop_bang_neck_circumference","¿Circunferencia del cuello mayor al umbral del cuestionario?"],
                   ["stop_bang_male","¿Sexo masculino?"],
-                ] as const).map(([field,label]) => <div key={field} className="grid grid-cols-[1fr_80px_80px] items-center border-b p-2 text-sm">
+                ] as const).map(([field,label]) => <div key={field} className="grid w-full grid-cols-[minmax(0,1fr)_4rem_4rem] items-center border-b border-gray-500 p-2 text-sm">
                   <span>{label}</span>
                   <Controller control={control} name={field} render={({field: {onChange,value}}) => <><label className="text-center"><input checked={value === true} type="radio" onChange={() => onChange(true)} /> Sí</label><label className="text-center"><input checked={value === false} type="radio" onChange={() => onChange(false)} /> No</label></>} />
                 </div>)}
               </div>
               <p className="mt-1 text-xs text-gray-600">3 o más respuestas afirmativas: riesgo elevado.</p>
             </div>
-            <div className="mt-5 overflow-x-auto">
+            <div className="mt-5 w-full">
               <h3 className="mb-2 font-semibold">Trastorno del sueño</h3>
               <div className="min-w-[560px] rounded border">
                 {([
