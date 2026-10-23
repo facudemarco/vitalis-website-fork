@@ -175,8 +175,8 @@ export default function ClientesAdminPage() {
         )}
 
         {/* Tabla */}
-        <div className="overflow-x-auto">
-          <table className={`w-full text-xs ${isEmpresas ? "" : "table-fixed"}`}>
+        <div className="min-w-0 overflow-x-auto rounded-lg">
+          <table className={`w-full text-xs ${isEmpresas ? "min-w-[760px] table-auto" : "min-w-[1040px] table-auto"}`}>
             <thead>
               {isEmpresas ? (
                 <tr className="my-2 bg-[#3A3A3A] text-white">
