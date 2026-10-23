@@ -244,6 +244,7 @@ export default function EstudiosPacientesPage({params}: PageProps) {
     >
       <section className="my-5 flex flex-col gap-5">
         {consentUploadControl}
+        {heightUploadControl}
         <Link className="flex items-center gap-1 font-bold" href="/system/clientes">
           <ArrowLeft />
           Volver
