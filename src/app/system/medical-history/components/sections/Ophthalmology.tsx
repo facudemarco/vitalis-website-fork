@@ -50,11 +50,11 @@ export const OphthalmologySection = React.memo(({defaultValues, registerSection,
   );
 
   const matrix = (table: typeof tables[number]) => (
-    <div key={table.title} className="min-w-0 overflow-x-auto rounded-lg border">
-      <h3 className="bg-slate-100 px-3 py-2 text-sm font-semibold">{table.title}</h3>
+    <div key={table.title} className="w-full min-w-0 overflow-x-auto border border-gray-500">
+      <h3 className="border-b border-gray-500 px-3 py-2 text-base font-semibold">{table.title}</h3>
       <table className="w-full min-w-[420px] border-collapse text-sm">
-        <thead><tr><th className="border p-2 text-left"></th>{table.options.map(o=><th key={o} className="border p-2">{o}</th>)}</tr></thead>
-        <tbody>{table.fields.map(([field,label])=><tr key={field}><th className="border p-2 text-left">{label}</th>{table.options.map(option=><td key={option} className="border p-2 text-center"><input aria-label={label+" "+option} type="radio" value={option} {...register(field)} /></td>)}</tr>)}</tbody>
+        <thead><tr><th className="border border-gray-500 p-2 text-left"></th>{table.options.map(o=><th key={o} className="border border-gray-500 p-2">{o}</th>)}</tr></thead>
+        <tbody>{table.fields.map(([field,label])=><tr key={field}><th className="border p-2 text-left">{label}</th>{table.options.map(option=><td key={option} className="border border-gray-500 p-2 text-center"><input aria-label={label+" "+option} type="radio" value={option} {...register(field)} /></td>)}</tr>)}</tbody>
       </table>
     </div>
   );
@@ -63,17 +63,17 @@ export const OphthalmologySection = React.memo(({defaultValues, registerSection,
       <section className="space-y-5 border-t border-gray-200 px-2 pt-5">
         <h3 className="font-semibold">Anamnesis visual</h3>
         <div>{yesNoFields.map(([field,label])=>radioRow(field,label))}</div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="text-sm">¿De qué y cuándo fue la cirugía?<textarea className="mt-1 min-h-20 w-full rounded border p-2" {...register("vision_surgery_details")} /></label>
+        <div className="grid w-full gap-3 sm:grid-cols-2">
+          <label className="text-sm">¿De qué y cuándo fue la cirugía?<textarea className="mt-1 min-h-20 w-full border border-gray-500 p-2" {...register("vision_surgery_details")} /></label>
           <label className="text-sm">Detalle de medicamentos<textarea className="mt-1 min-h-20 w-full rounded border p-2" {...register("medications_details")} /></label>
-          <label className="text-sm">Visión nocturna<input className="mt-1 w-full rounded border p-2" placeholder="1-100%" {...register("night_vision")} /></label>
-          <label className="text-sm">Visión crepuscular<input className="mt-1 w-full rounded border p-2" placeholder="1-100%" {...register("twilight_vision")} /></label>
+          <label className="text-sm">Visión nocturna<input className="mt-1 w-full border border-gray-500 p-2" placeholder="1-100%" {...register("night_vision")} /></label>
+          <label className="text-sm">Visión crepuscular<input className="mt-1 w-full border border-gray-500 p-2" placeholder="1-100%" {...register("twilight_vision")} /></label>
           <label className="text-sm">Deslumbramiento (readaptación al encandilamiento)<input className="mt-1 w-full rounded border p-2" placeholder="1-100 seg" {...register("glare_readaptation")} /></label>
         </div>
         <div className="grid gap-4 lg:grid-cols-2">{tables.map(matrix)}</div>
         <div className="grid gap-4 sm:grid-cols-2">
-          {(["ishihara","trcs","farnsworth"] as const).map((field)=><fieldset key={field} className="rounded-lg border p-3"><legend className="px-1 font-medium">{field==="trcs"?"T.R.C.S":field==="ishihara"?"Ishi Hara":"Farnsworth"}</legend><div className="flex flex-wrap gap-4">{(field==="ishihara"?["Normal","Discromatópsico","No realizado"]:["Normal","Anormal","No realizado"]).map(option=><label key={option} className="flex items-center gap-1 text-sm"><input type="radio" value={option} {...register(field)} />{option}</label>)}</div></fieldset>)}
-          <label className="text-sm">Cabeza y cuello<select className="mt-1 block w-full rounded border p-2" {...register("head_neck")}><option value="">Seleccionar</option>{["1","2","3","4"].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
+          {(["ishihara","trcs","farnsworth"] as const).map((field)=><fieldset key={field} className="border border-gray-500 p-3"><legend className="px-1 font-medium">{field==="trcs"?"T.R.C.S":field==="ishihara"?"Ishi Hara":"Farnsworth"}</legend><div className="flex flex-wrap gap-4">{(field==="ishihara"?["Normal","Discromatópsico","No realizado"]:["Normal","Anormal","No realizado"]).map(option=><label key={option} className="flex items-center gap-1 text-sm"><input type="radio" value={option} {...register(field)} />{option}</label>)}</div></fieldset>)}
+          <label className="text-sm">Cabeza y cuello<select className="mt-1 block w-full border border-gray-500 p-2" {...register("head_neck")}><option value="">Seleccionar</option>{["1","2","3","4"].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
           {radioRow("fundus_dilation","Dilatación")}
         </div>
       </section>
