@@ -183,31 +183,6 @@ export const PreviousProblems = React.memo(({defaultValues, registerSection}: Pr
                 />
               </div>
 
-              {/* Nerviosismo excesivo */}
-              <div className="flex items-center justify-between">
-                <p className="flex-1">Nerviosismo excesivo</p>
-                <Controller
-                  control={control}
-                  name="excesive_nervious"
-                  render={({field: {onChange, value}}) => (
-                    <div className="flex gap-6">
-                      <input
-                        checked={value}
-                        className="h-6 w-6 cursor-pointer"
-                        type="radio"
-                        onChange={() => onChange(true)}
-                      />
-                      <input
-                        checked={!value}
-                        className="h-6 w-6 cursor-pointer"
-                        type="radio"
-                        onChange={() => onChange(false)}
-                      />
-                    </div>
-                  )}
-                />
-              </div>
-
               {/* Pérdida de memoria */}
               <div className="flex items-center justify-between">
                 <p className="flex-1">Pérdida de memoria</p>
