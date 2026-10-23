@@ -39,7 +39,7 @@ export const ImmunizationsSection = React.memo(({defaultValues, registerSection}
     mode: "onBlur",
   });
 
-  const {getValues, trigger, control} = form;
+  const {getValues, trigger, control, register} = form;
 
   useEffect(() => {
     const unregister = registerSection({
