@@ -33,7 +33,6 @@ import {PersonalHistorySection} from "../components/sections/PersonalHistory";
 import {ClinicalExamSection} from "../components/sections/ClinicalExam";
 import {SkinExamSection} from "../components/sections/SkinExam";
 import {OftalmologicoExamSection} from "../components/sections/Oftalmologico";
-import {OphthalmologySection} from "../components/sections/Ophthalmology";
 import {BucodentalExamSection} from "../components/sections/BucodentalExam";
 import {OrlExamSection} from "../components/sections/OrlExam";
 import {HeadExamSection} from "../components/sections/HeadExam";
@@ -450,12 +449,10 @@ export default function MedicalHistoryPage({params}: PageProps) {
             registerSection={(handler) =>
               registry.register("medical_record_oftalmologico_exam", handler)
             }
-          />
-        </Accordion>
-        <Accordion collapsible type="single">
-          <OphthalmologySection
-            defaultValues={medicalRecord.medical_record_ophthalmology ?? null}
-            registerSection={(handler) => registry.register("medical_record_ophthalmology", handler)}
+            ophthalmologyValues={medicalRecord.medical_record_ophthalmology ?? null}
+            registerOphthalmology={(handler) =>
+              registry.register("medical_record_ophthalmology", handler)
+            }
           />
         </Accordion>
         <Accordion collapsible type="single">
