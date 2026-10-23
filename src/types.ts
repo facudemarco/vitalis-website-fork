@@ -94,6 +94,7 @@ export interface UserCompany {
   first_name?: string;
   last_name?: string;
   role: "company";
+  is_active?: boolean;
   phone?: string;
   createdAt?: string;
   updatedAt?: string;
