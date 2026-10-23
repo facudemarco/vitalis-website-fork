@@ -1,18 +1,11 @@
 import type {Metadata} from "next";
 
-import {Open_Sans} from "next/font/google";
 import {Suspense} from "react";
 
 import "./globals.css";
 import {AuthProvider} from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-
-const openSans = Open_Sans({
-  subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Vitalis - Centro de salud integral",
@@ -26,7 +19,12 @@ export const metadata: Metadata = {
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="es">
-      <body className={`${openSans.className} flex min-h-screen flex-col bg-[#ededed]`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+      </head>
+      <body className="flex min-h-screen flex-col bg-[#ededed]">
         <AuthProvider>
           <Suspense fallback={<div>Loading...</div>}>
             <Header />
