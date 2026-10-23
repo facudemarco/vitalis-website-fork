@@ -7,15 +7,16 @@ import {SectionHandler} from "../../useFormRegistry";
 
 interface Props {
   defaultValues: MedicalRecordData | null;
+  defaultCompanyName?: string | null;
   registerSection: (handler: SectionHandler<MedicalRecordData>) => () => void;
   currentImageUrl?: string | null;
   onImageChange?: (file: File | null) => void;
 }
 
 export const PatientDataSection = React.memo(
-  ({defaultValues, registerSection, currentImageUrl, onImageChange}: Props) => {
+  ({defaultValues, defaultCompanyName, registerSection, currentImageUrl, onImageChange}: Props) => {
     const form = useForm<MedicalRecordData>({
-      defaultValues: defaultValues ?? ({} as MedicalRecordData),
+      defaultValues: {...defaultValues, company_name: defaultValues?.company_name || defaultCompanyName || "Particular"} as MedicalRecordData,
       mode: "onBlur",
     });
 
@@ -54,10 +55,10 @@ export const PatientDataSection = React.memo(
       <section className="flex flex-col items-center gap-5 px-5">
         <div className="mt-7 flex w-full flex-col justify-between gap-2 text-xl font-bold md:flex-row md:text-2xl">
           <p>Datos del paciente *</p>
-          {/* <p>Empresa</p> */}
         </div>
         <div className="flex w-full flex-col gap-5 md:flex-row md:gap-4">
           <div className="grid flex-1 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <input className="w-full border border-gray-500 p-2" placeholder="Empresa (o Particular)" type="text" {...register("company_name")} />
             <input
               className="w-full border border-gray-500 p-2"
               placeholder="Nombre completo"
