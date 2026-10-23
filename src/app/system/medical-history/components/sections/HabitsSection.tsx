@@ -67,31 +67,6 @@ export const HabitsSection = React.memo(({defaultValues, registerSection}: Props
               </div>
             </div>
 
-            {/* Dieta */}
-            <div className="flex items-center text-lg">
-              <p className="w-[150px] shrink-0 md:w-[300px]">Dieta</p>
-              <Controller
-                control={control}
-                name="diet"
-                render={({field: {onChange, value}}) => (
-                  <div className="flex gap-6">
-                    <input
-                      checked={value}
-                      className="h-6 w-6 cursor-pointer"
-                      type="radio"
-                      onChange={() => onChange(true)}
-                    />
-                    <input
-                      checked={!value}
-                      className="h-6 w-6 cursor-pointer"
-                      type="radio"
-                      onChange={() => onChange(false)}
-                    />
-                  </div>
-                )}
-              />
-            </div>
-
             {/* Fuma */}
             <div className="flex flex-wrap items-center text-lg">
               <p className="w-[150px] shrink-0 md:w-[300px]">Fuma</p>
