@@ -266,7 +266,7 @@ export const ImmunizationsSection = React.memo(({defaultValues, registerSection}
               )} />
               <span />
             </div>
-          ))
+          ))}
         </div>
       </AccordionContent>
     </AccordionItem>
