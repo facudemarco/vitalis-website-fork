@@ -62,6 +62,7 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
   pageTitle: string; // "Clientes", "Agregar usuario", "Mis datos", etc.
   pageIcon?: React.ReactNode; // iconito izquierda del título
+  wide?: boolean;
 }
 
 // Función helper para obtener el label del usuario
@@ -110,7 +111,7 @@ function getUserLabel(user: NonNullable<ReturnType<typeof useAuth>["user"]>): st
   return `${user.first_name} ${user.last_name} - Paciente`;
 }
 
-export default function Panel({children, pageTitle, pageIcon}: DashboardLayoutProps) {
+export default function Panel({children, pageTitle, pageIcon, wide = false}: DashboardLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
   const {user, logout} = useAuth();
@@ -130,7 +131,7 @@ export default function Panel({children, pageTitle, pageIcon}: DashboardLayoutPr
   return (
     <main className="flex min-h-screen items-start justify-center bg-[#f2f2f2] px-0 py-0 md:px-4 md:py-32">
       {/* Logo flotante superior */}
-      <div className="relative w-full max-w-6xl">
+      <div className={`relative w-full ${wide ? "max-w-[1440px]" : "max-w-6xl"}`}>
         {/* Logo en móvil - centrado arriba */}
         <div className="flex justify-center bg-[#f2f2f2] pt-8 pb-4 md:hidden">
           <img
