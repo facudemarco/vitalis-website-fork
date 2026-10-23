@@ -124,6 +124,7 @@ export default function MedicalHistoryPage({params}: PageProps) {
   const router = useRouter();
 
   const [medicalRecord, setMedicalRecord] = useState<MedicalRecord | null>(null);
+  const [patientCompanyName, setPatientCompanyName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -165,7 +166,9 @@ export default function MedicalHistoryPage({params}: PageProps) {
         setLoading(true);
         setError(null);
 
-        const records: MedicalRecord[] = await dataService.getMedicalRecord(patientId);
+        const [records, patients] = await Promise.all([dataService.getMedicalRecord(patientId), dataService.getPatients()]);
+        const patient = patients.find((item) => item.id === patientId || item.user_id === patientId);
+        setPatientCompanyName(patient?.company_name || (patient?.company_id ? "" : "Particular"));
         const active = records[0] || ({} as MedicalRecord);
 
         setMedicalRecord(active);
@@ -361,6 +364,7 @@ export default function MedicalHistoryPage({params}: PageProps) {
           Los campos con * son obligatorios
         </p>
         <PatientDataSection
+          defaultCompanyName={patientCompanyName}
           currentImageUrl={medicalRecord.medical_record_data_img?.url ?? null}
           defaultValues={medicalRecord.medical_record_data ?? null}
           registerSection={(handler) => registry.register("medical_record_data", handler)}
