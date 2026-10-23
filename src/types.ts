@@ -35,6 +35,7 @@ export interface UserAdmin {
 export interface StudiesCategory {
   name: string;
   image: string;
+  requires_report?: boolean;
   url_image?: string;
   id?: string;
 }
