@@ -48,6 +48,7 @@ export interface StudyFile {
   mime_type: string;
   size_bytes: number;
   uploaded_at: string;
+  is_report?: boolean;
 }
 
 export interface Studies {
