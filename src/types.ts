@@ -116,6 +116,7 @@ export interface UserPatient {
   insurance?: string;
   company_id?: string | null;
   company_name?: string | null;
+  patient_status?: PatientWorkflowStatus | null;
   createdAt?: string;
   updatedAt?: string;
   study_type?: string;
@@ -709,8 +710,6 @@ export interface MedicalRecord {
   medical_record_medical_responsable_signatures: MedicalRecordSignature | null;
   fecha_medico_evaluador?: string | null;
   firma_medico_evaluador?: string | null;
-  fecha_medico_laboral?: string | null;
-  firma_medico_laboral?: string | null;
 }
 
 export interface Ticket {
