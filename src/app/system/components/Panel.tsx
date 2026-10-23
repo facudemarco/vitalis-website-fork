@@ -131,7 +131,7 @@ export default function Panel({children, pageTitle, pageIcon, wide = false}: Das
   return (
     <main className="flex min-h-screen items-start justify-center bg-[#f2f2f2] px-0 py-0 md:px-4 md:py-32">
       {/* Logo flotante superior */}
-      <div className={`relative w-full ${wide ? "max-w-[1440px]" : "max-w-6xl"}`}>
+      <div className="relative w-full max-w-6xl" style={wide ? {maxWidth: "1536px"} : undefined}>
         {/* Logo en móvil - centrado arriba */}
         <div className="flex justify-center bg-[#f2f2f2] pt-8 pb-4 md:hidden">
           <img
