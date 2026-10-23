@@ -177,6 +177,7 @@ export interface MedicalRecordCardiovascularExam {
   observations: string;
   freq_cardiaca: number;
   varices: boolean;
+  hta?: boolean | null;
   tension_arterial: number;
   extrasistoles: boolean;
   ritmo_irregular: boolean;
@@ -214,6 +215,21 @@ export interface MedicalRecordNeuroClinicalExam {
   motilidad_alterada: boolean;
   desorientado: boolean;
   sensibilidad_alterada: boolean;
+  stop_bang_snoring?: boolean | null;
+  stop_bang_tiredness?: boolean | null;
+  stop_bang_observed_apnea?: boolean | null;
+  stop_bang_hypertension?: boolean | null;
+  stop_bang_bmi_over_35?: boolean | null;
+  stop_bang_age_over_50?: boolean | null;
+  stop_bang_neck_circumference?: boolean | null;
+  stop_bang_male?: boolean | null;
+  sleep_disorder_snoring?: boolean | null;
+  sleep_disorder_smoking?: boolean | null;
+  sleep_disorder_hta?: boolean | null;
+  sleep_disorder_obesity?: boolean | null;
+  sleep_disorder_short_neck?: boolean | null;
+  sleep_disorder_mallampati_3_4?: boolean | null;
+  sleep_disorder_stop_bang?: boolean | null;
 }
 
 export interface MedicalRecordRespiratorioExam {
@@ -232,6 +248,7 @@ export interface MedicalRecordRespiratorioExam {
 export interface MedicalRecordData {
   id: string;
   medical_record_id: string;
+  company_name?: string | null;
   sons?: number | null;
   nacionality: string;
   phone: number;
@@ -266,6 +283,7 @@ export interface MedicalRecordRecomendations {
   apto: boolean;
   apto_preexistencia_condiciona: boolean;
   no_apto_temporal: boolean;
+  retenido?: boolean | null;
   apto_preexistencia_no_condiciona: boolean;
 }
 
@@ -291,6 +309,22 @@ export interface MedicalRecordBucodentalExam {
 }
 
 // TIPADOS NUEVOS
+
+export interface MedicalRecordOphthalmology {
+  id: string; medical_record_id: string;
+  consulted_ophthalmologist?: boolean | null; vision_disease?: boolean | null;
+  vision_treatment?: boolean | null; vision_surgery?: boolean | null;
+  vision_surgery_details?: string | null; glasses_or_contacts?: boolean | null;
+  medications?: boolean | null; medications_details?: string | null;
+  monocular_vision?: boolean | null; anisometropia?: boolean | null;
+  night_vision?: string | null; twilight_vision?: string | null; glare_readaptation?: string | null;
+  ocular_movement_extrinsic?: boolean | null; ocular_movement_intrinsic?: boolean | null;
+  visual_field_od?: string | null; visual_field_oi?: string | null;
+  bmc_conjunctivas?: string | null; bmc_cornea?: string | null; bmc_lens?: string | null;
+  ocular_tension_od?: string | null; ocular_tension_oi?: string | null;
+  fundus_od?: string | null; fundus_oi?: string | null; fundus_dilation?: boolean | null;
+  ishihara?: string | null; trcs?: string | null; farnsworth?: string | null; head_neck?: string | null;
+}
 
 export interface MedicalRecordOftalmologicoMedicalExam {
   id: string;
@@ -380,6 +414,8 @@ export interface MedicalRecordImmunizations {
   sars_cov_2_dosis: number;
   dengue: boolean;
   fha: boolean;
+  fiebre_amarilla?: boolean | null;
+  meningitis?: boolean | null;
   triple_adultos_tetanos: boolean;
   hepatitis_a: boolean;
   hepatitis_b: boolean;
@@ -433,6 +469,10 @@ export interface MedicalRecordPersonalHistory {
   covid: boolean;
   fha: boolean;
   dengue: boolean;
+  medications?: boolean | null;
+  medications_details?: string | null;
+  malformations?: boolean | null;
+  malformations_details?: string | null;
 }
 
 export interface MedicalRecordOrlExam {
@@ -558,6 +598,7 @@ export interface MedicalRecordEvaluationType {
   other: string;
   other_boolean: boolean;
   laboral_change_position: boolean;
+  examen_psicofisico?: boolean | null;
 }
 
 export interface MedicalRecordHeadExam {
@@ -605,7 +646,7 @@ export interface MedicalRecordHabits {
   drugs: boolean;
   diet: boolean;
   physic_activity_type: string;
-  alcoholic_drinks_quantity: number;
+  alcoholic_drinks_quantity: string;
   daily_diet: boolean;
   smoke_quantity: number;
   frequency: string;
@@ -633,6 +674,7 @@ export interface MedicalRecord {
   medical_record_cardiovascular_exam: MedicalRecordCardiovascularExam | null;
   medical_record_studies: MedicalRecordStudies | null;
   medical_record_neuro_clinical_exam: MedicalRecordNeuroClinicalExam | null;
+  medical_record_ophthalmology?: MedicalRecordOphthalmology | null;
   medical_record_respiratorio_exam: MedicalRecordRespiratorioExam | null;
   medical_record_digestive_exam: MedicalRecordDigestiveExam | null;
   medical_record_recomendations: MedicalRecordRecomendations | null;
