@@ -172,6 +172,12 @@ export const PersonalHistorySection = React.memo(({defaultValues, registerSectio
                   </div>
                 )}
               />
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className="flex items-center gap-2"><input type="checkbox" {...register("medications")} />Medicamentos</label>
+              <input className="w-full border border-gray-500 p-2" placeholder="¿Cuáles?" {...register("medications_details")} />
+              <label className="flex items-center gap-2"><input type="checkbox" {...register("malformations")} />Malformaciones</label>
+              <input className="w-full border border-gray-500 p-2" placeholder="¿Cuáles?" {...register("malformations_details")} />
+            </div>
             </div>
           </div>
         </div>
