@@ -28,6 +28,21 @@ const normalizeBooleanFields = (
     reflejos_alterados: toBool(data.reflejos_alterados),
     apraxia: toBool(data.apraxia),
     ataxia: toBool(data.ataxia),
+    stop_bang_snoring: toBool(data.stop_bang_snoring),
+    stop_bang_tiredness: toBool(data.stop_bang_tiredness),
+    stop_bang_observed_apnea: toBool(data.stop_bang_observed_apnea),
+    stop_bang_hypertension: toBool(data.stop_bang_hypertension),
+    stop_bang_bmi_over_35: toBool(data.stop_bang_bmi_over_35),
+    stop_bang_age_over_50: toBool(data.stop_bang_age_over_50),
+    stop_bang_neck_circumference: toBool(data.stop_bang_neck_circumference),
+    stop_bang_male: toBool(data.stop_bang_male),
+    sleep_disorder_snoring: toBool(data.sleep_disorder_snoring),
+    sleep_disorder_smoking: toBool(data.sleep_disorder_smoking),
+    sleep_disorder_hta: toBool(data.sleep_disorder_hta),
+    sleep_disorder_obesity: toBool(data.sleep_disorder_obesity),
+    sleep_disorder_short_neck: toBool(data.sleep_disorder_short_neck),
+    sleep_disorder_mallampati_3_4: toBool(data.sleep_disorder_mallampati_3_4),
+    sleep_disorder_stop_bang: toBool(data.sleep_disorder_stop_bang),
   };
 };
 
@@ -229,7 +244,8 @@ export const NeuroClinicalExamSection = React.memo(({defaultValues, registerSect
                   ["stop_bang_neck_circumference","¿Circunferencia del cuello mayor al umbral del cuestionario?"],
                   ["stop_bang_male","¿Sexo masculino?"],
                 ] as const).map(([field,label]) => <div key={field} className="grid grid-cols-[1fr_80px_80px] items-center border-b p-2 text-sm">
-                  <span>{label}</span><label className="text-center"><input type="radio" value="true" {...register(field)} /> Sí</label><label className="text-center"><input type="radio" value="false" {...register(field)} /> No</label>
+                  <span>{label}</span>
+                  <Controller control={control} name={field} render={({field: {onChange,value}}) => <><label className="text-center"><input checked={value === true} type="radio" onChange={() => onChange(true)} /> Sí</label><label className="text-center"><input checked={value === false} type="radio" onChange={() => onChange(false)} /> No</label></>} />
                 </div>)}
               </div>
               <p className="mt-1 text-xs text-gray-600">3 o más respuestas afirmativas: riesgo elevado.</p>
