@@ -233,37 +233,66 @@ export const NeuroClinicalExamSection = React.memo(({defaultValues, registerSect
 
             <div className="mt-6 w-full">
               <h3 className="mb-2 font-semibold">Cuestionario STOP-BANG</h3>
-              <div className="w-full border border-gray-500">
-                {([
-                  ["stop_bang_snoring","¿Ronca fuerte?"],
-                  ["stop_bang_tiredness","¿Se siente cansado o somnoliento durante el día?"],
-                  ["stop_bang_observed_apnea","¿Alguien observó que deja de respirar mientras duerme?"],
-                  ["stop_bang_hypertension","¿Tiene hipertensión arterial?"],
-                  ["stop_bang_bmi_over_35","¿Índice de masa corporal mayor a 35?"],
-                  ["stop_bang_age_over_50","¿Tiene más de 50 años?"],
-                  ["stop_bang_neck_circumference","¿Circunferencia del cuello mayor al umbral del cuestionario?"],
-                  ["stop_bang_male","¿Sexo masculino?"],
-                ] as const).map(([field,label]) => <div key={field} className="grid w-full grid-cols-[minmax(0,1fr)_4rem_4rem] items-center border-b border-gray-500 p-2 text-sm">
-                  <span>{label}</span>
-                  <Controller control={control} name={field} render={({field: {onChange,value}}) => <><label className="text-center"><input checked={value === true} type="radio" onChange={() => onChange(true)} /> Sí</label><label className="text-center"><input checked={value === false} type="radio" onChange={() => onChange(false)} /> No</label></>} />
-                </div>)}
+              <div className="overflow-x-auto">
+                <div className="min-w-[520px] overflow-hidden rounded-lg border border-gray-300 bg-white">
+                  <div className="grid grid-cols-[minmax(0,1fr)_5rem_5rem] bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-600">
+                    <span />
+                    <span className="text-center">Sí</span>
+                    <span className="text-center">No</span>
+                  </div>
+                  {([
+                    ["stop_bang_snoring","¿Ronca fuerte?"],
+                    ["stop_bang_tiredness","¿Se siente cansado o somnoliento durante el día?"],
+                    ["stop_bang_observed_apnea","¿Alguien observó que deja de respirar mientras duerme?"],
+                    ["stop_bang_hypertension","¿Tiene hipertensión arterial?"],
+                    ["stop_bang_bmi_over_35","¿Índice de masa corporal mayor a 35?"],
+                    ["stop_bang_age_over_50","¿Tiene más de 50 años?"],
+                    ["stop_bang_neck_circumference","¿Circunferencia del cuello mayor al umbral del cuestionario?"],
+                    ["stop_bang_male","¿Sexo masculino?"],
+                  ] as const).map(([field, label]) => (
+                    <div key={field} className="grid grid-cols-[minmax(0,1fr)_5rem_5rem] items-center border-t border-gray-200 px-3 py-2 text-sm">
+                      <span className="pr-2">{label}</span>
+                      <Controller control={control} name={field} render={({field: {onChange, value}}) => (
+                        <>
+                          <label className="flex items-center justify-center"><input aria-label={label + ": sí"} checked={value === true} type="radio" onChange={() => onChange(true)} /></label>
+                          <label className="flex items-center justify-center"><input aria-label={label + ": no"} checked={value === false} type="radio" onChange={() => onChange(false)} /></label>
+                        </>
+                      )} />
+                    </div>
+                  ))}
+                </div>
               </div>
-              <p className="mt-1 text-xs text-gray-600">3 o más respuestas afirmativas: riesgo elevado.</p>
+              <p className="mt-2 text-xs text-gray-600">3 o más respuestas afirmativas: riesgo elevado.</p>
             </div>
             <div className="mt-5 w-full">
               <h3 className="mb-2 font-semibold">Trastorno del sueño</h3>
-              <div className="min-w-[560px] rounded border">
-                {([
-                  ["sleep_disorder_snoring","Ronquido"],
-                  ["sleep_disorder_smoking","Tabaquismo"],
-                  ["sleep_disorder_hta","HTA"],
-                  ["sleep_disorder_obesity","Obesidad tipo II o más"],
-                  ["sleep_disorder_short_neck","Cuello corto"],
-                  ["sleep_disorder_mallampati_3_4","Mallampati (3 o 4)"],
-                  ["sleep_disorder_stop_bang","Cuestionario STOP-BANG positivo"],
-                ] as const).map(([field,label]) => <div key={field} className="grid grid-cols-[1fr_80px_80px] items-center border-b p-2 text-sm">
-                  <span>{label}</span><label className="text-center"><input type="radio" value="true" {...register(field)} /> Sí</label><label className="text-center"><input type="radio" value="false" {...register(field)} /> No</label>
-                </div>)}
+              <div className="overflow-x-auto">
+                <div className="min-w-[520px] overflow-hidden rounded-lg border border-gray-300 bg-white">
+                  <div className="grid grid-cols-[minmax(0,1fr)_5rem_5rem] bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-600">
+                    <span />
+                    <span className="text-center">Sí</span>
+                    <span className="text-center">No</span>
+                  </div>
+                  {([
+                    ["sleep_disorder_snoring","Ronquido"],
+                    ["sleep_disorder_smoking","Tabaquismo"],
+                    ["sleep_disorder_hta","HTA"],
+                    ["sleep_disorder_obesity","Obesidad tipo II o más"],
+                    ["sleep_disorder_short_neck","Cuello corto"],
+                    ["sleep_disorder_mallampati_3_4","Mallampati (3 o 4)"],
+                    ["sleep_disorder_stop_bang","Cuestionario STOP-BANG positivo"],
+                  ] as const).map(([field, label]) => (
+                    <div key={field} className="grid grid-cols-[minmax(0,1fr)_5rem_5rem] items-center border-t border-gray-200 px-3 py-2 text-sm">
+                      <span className="pr-2">{label}</span>
+                      <Controller control={control} name={field} render={({field: {onChange, value}}) => (
+                        <>
+                          <label className="flex items-center justify-center"><input aria-label={label + ": sí"} checked={value === true} type="radio" onChange={() => onChange(true)} /></label>
+                          <label className="flex items-center justify-center"><input aria-label={label + ": no"} checked={value === false} type="radio" onChange={() => onChange(false)} /></label>
+                        </>
+                      )} />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
             {/* Observaciones */}
