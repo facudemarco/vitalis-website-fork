@@ -71,6 +71,7 @@ export const EvaluationTypeSection = React.memo(({defaultValues, registerSection
             <input type="checkbox" {...register("sport_physical_aptitude")} />
             <p className="text-lg">Aptitud Física Deportiva</p>
           </label>
+          <label className="flex items-center gap-2"><input type="checkbox" {...register("examen_psicofisico")} /><p className="text-lg">Examen Psicofísico</p></label>
           <label className="flex items-center gap-2">
             <p className="text-lg">¿Cual?</p>
             <input
