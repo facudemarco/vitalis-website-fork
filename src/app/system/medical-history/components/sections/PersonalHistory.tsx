@@ -173,10 +173,10 @@ export const PersonalHistorySection = React.memo(({defaultValues, registerSectio
                 )}
               />
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label className="flex items-center gap-2"><input type="checkbox" {...register("medications")} />Medicamentos</label>
-              <input className="w-full border border-gray-500 p-2" placeholder="¿Cuáles?" {...register("medications_details")} />
-              <label className="flex items-center gap-2"><input type="checkbox" {...register("malformations")} />Malformaciones</label>
-              <input className="w-full border border-gray-500 p-2" placeholder="¿Cuáles?" {...register("malformations_details")} />
+              <div><span>Medicamentos</span><Controller control={control} name="medications" render={({field: {onChange,value}}) => <div className="flex gap-4"><label><input checked={value === true} type="radio" onChange={() => onChange(true)} /> Sí</label><label><input checked={value === false} type="radio" onChange={() => onChange(false)} /> No</label></div>} /></div>
+              <input className="w-full border border-gray-500 p-2" placeholder="¿Cuáles medicamentos?" {...register("medications_details")} />
+              <div><span>Malformaciones</span><Controller control={control} name="malformations" render={({field: {onChange,value}}) => <div className="flex gap-4"><label><input checked={value === true} type="radio" onChange={() => onChange(true)} /> Sí</label><label><input checked={value === false} type="radio" onChange={() => onChange(false)} /> No</label></div>} /></div>
+              <input className="w-full border border-gray-500 p-2" placeholder="¿Cuáles malformaciones?" {...register("malformations_details")} />
             </div>
             </div>
           </div>
