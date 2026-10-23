@@ -7,6 +7,7 @@ import {SectionHandler} from "../../useFormRegistry";
 interface Props {
   defaultValues: MedicalRecordOphthalmology | null;
   registerSection: (handler: SectionHandler<MedicalRecordOphthalmology>) => () => void;
+  embedded?: boolean;
 }
 
 const yesNoFields: Array<[keyof MedicalRecordOphthalmology, string]> = [
@@ -29,7 +30,7 @@ const tables: Array<{title: string; fields: Array<[keyof MedicalRecordOphthalmol
   {title:"Fondo de ojo", fields:[["fundus_od","OD"],["fundus_oi","OI"]], options:["Normal","Patológico","No realizado"]},
 ];
 
-export const OphthalmologySection = React.memo(({defaultValues, registerSection}: Props) => {
+export const OphthalmologySection = React.memo(({defaultValues, registerSection, embedded = false}: Props) => {
   const booleanFields = ["consulted_ophthalmologist","vision_disease","vision_treatment","vision_surgery","glasses_or_contacts","medications","monocular_vision","anisometropia","ocular_movement_extrinsic","ocular_movement_intrinsic","fundus_dilation"] as const;
   const toBool = (value: unknown) => value === true || value === "true" || value === 1;
   const normalizedDefaults = defaultValues ? {...defaultValues, ...Object.fromEntries(booleanFields.map((field) => [field, defaultValues[field] == null ? undefined : toBool(defaultValues[field])]))} as MedicalRecordOphthalmology : null;
@@ -39,8 +40,8 @@ export const OphthalmologySection = React.memo(({defaultValues, registerSection}
   useEffect(() => registerSection({getValues, validate: async () => trigger()}), [registerSection,getValues,trigger]);
 
   const radioRow = (name: (typeof yesNoFields)[number][0], label: string) => (
-    <div key={name} className="flex flex-wrap items-center gap-3 border-b py-2">
-      <span className="min-w-48 flex-1 text-sm">{label}</span>
+    <div key={name} className="grid grid-cols-[minmax(0,1fr)_4rem_4rem] items-center gap-2 border-b py-2">
+      <span className="min-w-0 text-sm">{label}</span>
       <Controller control={control} name={name} render={({field}) => <>
         <label className="flex items-center gap-1 text-sm"><input checked={field.value === true} type="radio" onChange={() => field.onChange(true)} />Sí</label>
         <label className="flex items-center gap-1 text-sm"><input checked={field.value === false} type="radio" onChange={() => field.onChange(false)} />No</label>
@@ -58,10 +59,8 @@ export const OphthalmologySection = React.memo(({defaultValues, registerSection}
     </div>
   );
 
-  return <AccordionItem value="ophthalmology">
-    <AccordionTrigger>Oftalmología</AccordionTrigger>
-    <AccordionContent>
-      <section className="space-y-5 px-2">
+  const content = (
+      <section className="space-y-5 border-t border-gray-200 px-2 pt-5">
         <h3 className="font-semibold">Anamnesis visual</h3>
         <div>{yesNoFields.map(([field,label])=>radioRow(field,label))}</div>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -78,6 +77,14 @@ export const OphthalmologySection = React.memo(({defaultValues, registerSection}
           {radioRow("fundus_dilation","Dilatación")}
         </div>
       </section>
-    </AccordionContent>
-  </AccordionItem>;
+  );
+
+  if (embedded) return content;
+
+  return (
+    <AccordionItem value="ophthalmology">
+      <AccordionTrigger>Oftalmología</AccordionTrigger>
+      <AccordionContent>{content}</AccordionContent>
+    </AccordionItem>
+  );
 });
