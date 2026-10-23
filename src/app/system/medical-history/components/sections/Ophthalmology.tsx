@@ -43,7 +43,7 @@ export const OphthalmologySection = React.memo(({defaultValues, registerSection,
     <div key={name} className="grid grid-cols-[minmax(0,1fr)_4rem_4rem] items-center gap-2 border-b py-2">
       <span className="min-w-0 text-sm">{label}</span>
       <Controller control={control} name={name} render={({field}) => <>
-        <label className="flex items-center gap-1 text-sm"><input checked={field.value === true} type="radio" onChange={() => field.onChange(true)} />Sí</label>
+        <label className="flex items-center justify-center gap-1 text-sm"><input checked={field.value === true} type="radio" onChange={() => field.onChange(true)} />Sí</label>
         <label className="flex items-center gap-1 text-sm"><input checked={field.value === false} type="radio" onChange={() => field.onChange(false)} />No</label>
       </>} />
     </div>
