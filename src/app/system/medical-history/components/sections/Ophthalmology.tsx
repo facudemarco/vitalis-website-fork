@@ -40,7 +40,7 @@ export const OphthalmologySection = React.memo(({defaultValues, registerSection,
   useEffect(() => registerSection({getValues, validate: async () => trigger()}), [registerSection,getValues,trigger]);
 
   const radioRow = (name: (typeof yesNoFields)[number][0], label: string) => (
-    <div key={name} className="grid grid-cols-[minmax(0,1fr)_4rem_4rem] items-center gap-2 border-b py-2">
+    <div key={name} className="grid grid-cols-[minmax(0,1fr)_4rem_4rem] items-center gap-2 border-b border-gray-200 py-3">
       <span className="min-w-0 text-sm">{label}</span>
       <Controller control={control} name={name} render={({field}) => <>
         <label className="flex items-center justify-center gap-1 text-sm"><input checked={field.value === true} type="radio" onChange={() => field.onChange(true)} />Sí</label>
@@ -50,12 +50,30 @@ export const OphthalmologySection = React.memo(({defaultValues, registerSection,
   );
 
   const matrix = (table: typeof tables[number]) => (
-    <div key={table.title} className="w-full min-w-0 overflow-x-auto border border-gray-500">
-      <h3 className="border-b border-gray-500 px-3 py-2 text-base font-semibold">{table.title}</h3>
-      <table className="w-full min-w-[420px] border-collapse text-sm">
-        <thead><tr><th className="border border-gray-500 p-2 text-left"></th>{table.options.map(o=><th key={o} className="border border-gray-500 p-2">{o}</th>)}</tr></thead>
-        <tbody>{table.fields.map(([field,label])=><tr key={field}><th className="border p-2 text-left">{label}</th>{table.options.map(option=><td key={option} className="border border-gray-500 p-2 text-center"><input aria-label={label+" "+option} type="radio" value={option} {...register(field)} /></td>)}</tr>)}</tbody>
-      </table>
+    <div key={table.title} className="min-w-0 overflow-hidden rounded-lg border border-gray-300 bg-white shadow-sm">
+      <h3 className="border-b border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-800">{table.title}</h3>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[360px] border-collapse text-sm">
+          <thead className="bg-gray-50 text-gray-700">
+            <tr>
+              <th className="border-b border-gray-200 px-3 py-2 text-left font-medium"></th>
+              {table.options.map((option) => <th key={option} className="border-b border-gray-200 px-3 py-2 text-center font-medium">{option}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {table.fields.map(([field, label], index) => (
+              <tr key={field} className={index % 2 === 0 ? "bg-white" : "bg-gray-50/70"}>
+                <th className="border-t border-gray-200 px-3 py-3 text-left font-medium text-gray-800">{label}</th>
+                {table.options.map((option) => (
+                  <td key={option} className="border-t border-gray-200 px-3 py-3 text-center">
+                    <input aria-label={label + " " + option} className="accent-[#3F5C3B]" type="radio" value={option} {...register(field)} />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 
