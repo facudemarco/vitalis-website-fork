@@ -175,6 +175,8 @@ export const RecomendationsSection = React.memo(({defaultValues, registerSection
               />
             </div>
 
+            <label className="mt-3 flex items-center gap-2"><input type="checkbox" {...register("retenido")} /><span className="text-base">Retenido</span></label>
+
             {/* Duración */}
             <div className="mt-4 flex items-center gap-2">
               <span className="text-base">Duración</span>
