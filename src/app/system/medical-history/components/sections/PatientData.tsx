@@ -7,15 +7,16 @@ import {SectionHandler} from "../../useFormRegistry";
 
 interface Props {
   defaultValues: MedicalRecordData | null;
+  defaultCompanyName?: string | null;
   registerSection: (handler: SectionHandler<MedicalRecordData>) => () => void;
   currentImageUrl?: string | null;
   onImageChange?: (file: File | null) => void;
 }
 
 export const PatientDataSection = React.memo(
-  ({defaultValues, registerSection, currentImageUrl, onImageChange}: Props) => {
+  ({defaultValues, defaultCompanyName, registerSection, currentImageUrl, onImageChange}: Props) => {
     const form = useForm<MedicalRecordData>({
-      defaultValues: {company_name: defaultValues?.company_name || "Particular", ...defaultValues} as MedicalRecordData,
+      defaultValues: {...defaultValues, company_name: defaultValues?.company_name || defaultCompanyName || "Particular"} as MedicalRecordData,
       mode: "onBlur",
     });
 
