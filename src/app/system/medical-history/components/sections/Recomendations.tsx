@@ -26,6 +26,7 @@ const normalizeBooleanFields = (
     apto_preexistencia_condiciona: toBool(data.apto_preexistencia_condiciona),
     no_apto_temporal: toBool(data.no_apto_temporal),
     apto_preexistencia_no_condiciona: toBool(data.apto_preexistencia_no_condiciona),
+    retenido: toBool(data.retenido),
   };
 };
 
@@ -55,6 +56,7 @@ export const RecomendationsSection = React.memo(({defaultValues, registerSection
       "no_apto_definitivo",
       "apto_preexistencia_condiciona",
       "no_apto_temporal",
+      "retenido",
     ];
 
     fields.forEach((field) => {
@@ -169,6 +171,26 @@ export const RecomendationsSection = React.memo(({defaultValues, registerSection
                     />
                     <label className="text-base" htmlFor="rec-no-apto-temporal">
                       No apto temporal
+                    </label>
+                  </div>
+                )}
+              />
+
+              {/* Retenido */}
+              <Controller
+                control={control}
+                name="retenido"
+                render={({field: {value}}) => (
+                  <div className="flex items-center gap-2">
+                    <input
+                      checked={value === true}
+                      className="h-6 w-6 cursor-pointer"
+                      id="rec-retenido"
+                      type="radio"
+                      onChange={() => handleSelection("retenido")}
+                    />
+                    <label className="text-base" htmlFor="rec-retenido">
+                      Retenido
                     </label>
                   </div>
                 )}

@@ -62,6 +62,7 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
   pageTitle: string; // "Clientes", "Agregar usuario", "Mis datos", etc.
   pageIcon?: React.ReactNode; // iconito izquierda del título
+  wide?: boolean;
 }
 
 // Función helper para obtener el label del usuario
@@ -110,7 +111,7 @@ function getUserLabel(user: NonNullable<ReturnType<typeof useAuth>["user"]>): st
   return `${user.first_name} ${user.last_name} - Paciente`;
 }
 
-export default function Panel({children, pageTitle, pageIcon}: DashboardLayoutProps) {
+export default function Panel({children, pageTitle, pageIcon, wide = false}: DashboardLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
   const {user, logout} = useAuth();
@@ -130,7 +131,7 @@ export default function Panel({children, pageTitle, pageIcon}: DashboardLayoutPr
   return (
     <main className="flex min-h-screen items-start justify-center bg-[#f2f2f2] px-0 py-0 md:px-4 md:py-32">
       {/* Logo flotante superior */}
-      <div className="relative w-full max-w-6xl">
+      <div className="relative w-full max-w-6xl" style={wide ? {maxWidth: "1536px"} : undefined}>
         {/* Logo en móvil - centrado arriba */}
         <div className="flex justify-center bg-[#f2f2f2] pt-8 pb-4 md:hidden">
           <img
@@ -196,7 +197,7 @@ export default function Panel({children, pageTitle, pageIcon}: DashboardLayoutPr
           </aside>
 
           {/* Contenido */}
-          <section className="flex-1 bg-[#F2F4F7] px-4 py-6 md:rounded-3xl md:px-10 md:py-8">
+          <section className="min-w-0 flex-1 bg-[#F2F4F7] px-4 py-6 md:rounded-3xl md:px-10 md:py-8">
             <header className="mb-4 flex flex-col gap-3 md:mb-0 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center justify-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black/5">
@@ -215,7 +216,7 @@ export default function Panel({children, pageTitle, pageIcon}: DashboardLayoutPr
               </div>
             </header>
             {/* Slot de contenido */}
-            <div className="h-full rounded-2xl p-2 md:p-6">{children}</div>
+            <div className="h-full min-w-0 rounded-2xl p-2 md:p-6">{children}</div>
           </section>
         </section>
       </div>

@@ -20,6 +20,7 @@ const LEGACY_STUDY_TYPES = [
   ["Audiometria", "Audiometría"],
   ["analisis-clinico", "Análisis clínico de laboratorio"],
   ["Consentimiento informado", "Consentimiento informado (PDF)"],
+  ["Cuestionario para trabajadores en altura, conducción de vehículos y trabajos en espacios confinados", "Cuestionario de altura (PDF)"],
 ] as const;
 
 export default function page() {
@@ -101,6 +102,8 @@ export default function page() {
   };
 
   const consentStudyType = "Consentimiento informado";
+  const heightStudyType = "Cuestionario para trabajadores en altura, conducción de vehículos y trabajos en espacios confinados";
+  const requiresPdf = studyType === consentStudyType || studyType === heightStudyType;
 
   const handleChangeStudyType = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const nextStudyType = e.target.value;
@@ -134,14 +137,14 @@ export default function page() {
       return;
     }
 
-    if (studyType === consentStudyType && !file.name.toLowerCase().endsWith(".pdf")) {
-      alert("El consentimiento informado debe ser un archivo PDF");
+    if (requiresPdf && !file.name.toLowerCase().endsWith(".pdf")) {
+      alert("Este estudio debe adjuntarse en formato PDF");
       return;
     }
 
     f.append("study_files", file);
     f.append("study_type", studyType);
-    f.append("status", studyType === consentStudyType ? "Disponible" : "pending");
+    f.append("status", requiresPdf ? "Disponible" : "pending");
 
     try {
       const res = await dataService.postStudie(selectedPatientForStudy.id, f);
@@ -336,11 +339,13 @@ export default function page() {
                 <label className="block text-sm font-medium text-gray-800" htmlFor="study-pdf">
                   {studyType === consentStudyType
                     ? "Subir consentimiento informado (PDF)"
-                    : "Subir archivo del estudio"}
+                    : studyType === heightStudyType
+                      ? "Subir cuestionario de altura completado (PDF)"
+                      : "Subir archivo del estudio"}
                 </label>
                 <input
                   ref={fileRef}
-                  accept={studyType === consentStudyType ? ".pdf,application/pdf" : "application/pdf,image/*"}
+                  accept={requiresPdf ? ".pdf,application/pdf" : "application/pdf,image/*"}
                   className="w-full rounded-lg border border-gray-300 bg-white p-2 text-gray-900"
                   id="study-pdf"
                   name="study-pdf"

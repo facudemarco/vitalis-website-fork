@@ -166,6 +166,14 @@ export const HeadExamSection = React.memo(({defaultValues, registerSection}: Pro
               />
             </div>
 
+            <div className="grid grid-cols-[minmax(0,1fr)_10rem] items-center gap-3 border-b py-2">
+              <label className="text-base font-medium" htmlFor="mallampati">Mallampati</label>
+              <select id="mallampati" className="w-full rounded border border-gray-500 p-2" {...register("mallampati")}>
+                <option value="">Seleccionar</option>
+                {["1", "2", "3", "4"].map((value) => <option key={value} value={value}>{value}</option>)}
+              </select>
+            </div>
+
             {/* Observaciones */}
             <div className="mt-4 flex flex-col gap-2">
               <span className="text-base font-semibold">Observaciones:</span>

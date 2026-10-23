@@ -123,6 +123,7 @@ export default function MedicalHistoryPage({params}: PageProps) {
   const router = useRouter();
 
   const [medicalRecord, setMedicalRecord] = useState<MedicalRecord | null>(null);
+  const [patientCompanyName, setPatientCompanyName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -140,6 +141,7 @@ export default function MedicalHistoryPage({params}: PageProps) {
   );
   const [editEvaluatorSig, setEditEvaluatorSig] = useState(false);
   const [editLaboralSig, setEditLaboralSig] = useState(false);
+  const [editPatientSig, setEditPatientSig] = useState(false);
 
   const registry = useFormRegistry<MedicalRecord>();
 
@@ -163,7 +165,9 @@ export default function MedicalHistoryPage({params}: PageProps) {
         setLoading(true);
         setError(null);
 
-        const records: MedicalRecord[] = await dataService.getMedicalRecord(patientId);
+        const [records, patients] = await Promise.all([dataService.getMedicalRecord(patientId), dataService.getPatients().catch(() => [])]);
+        const patient = patients.find((item) => item.id === patientId || item.user_id === patientId);
+        setPatientCompanyName(patient?.company_name || (patient?.company_id ? "Empresa" : "Particular"));
         const active = records[0] || ({} as MedicalRecord);
 
         setMedicalRecord(active);
@@ -359,6 +363,7 @@ export default function MedicalHistoryPage({params}: PageProps) {
           Los campos con * son obligatorios
         </p>
         <PatientDataSection
+          defaultCompanyName={patientCompanyName}
           currentImageUrl={medicalRecord.medical_record_data_img?.url ?? null}
           defaultValues={medicalRecord.medical_record_data ?? null}
           registerSection={(handler) => registry.register("medical_record_data", handler)}
@@ -443,6 +448,10 @@ export default function MedicalHistoryPage({params}: PageProps) {
             defaultValues={medicalRecord.medical_record_oftalmologico_exam ?? null}
             registerSection={(handler) =>
               registry.register("medical_record_oftalmologico_exam", handler)
+            }
+            ophthalmologyValues={medicalRecord.medical_record_ophthalmology ?? null}
+            registerOphthalmology={(handler) =>
+              registry.register("medical_record_ophthalmology", handler)
             }
           />
         </Accordion>
@@ -562,12 +571,6 @@ export default function MedicalHistoryPage({params}: PageProps) {
             defaultValuesDDJJ={medicalRecord.medical_record_ddjj ?? null}
             defaultValuesNeuro={medicalRecord.medical_record_neuro_medical_exam ?? null}
             defaultValuesOftalmo={medicalRecord.medical_record_oftalmologico_medical_exam ?? null}
-            existingMedicoSignatureUrl={
-              medicalRecord.medical_record_medical_responsable_signatures?.url ?? null
-            }
-            existingTrabajadorSignatureUrl={
-              medicalRecord.medical_record_patient_signatures?.url ?? null
-            }
             registerCuestionario={(handler) =>
               registry.register("medical_record_cuestionario_riesgos", handler)
             }
@@ -578,8 +581,6 @@ export default function MedicalHistoryPage({params}: PageProps) {
             registerOftalmo={(handler) =>
               registry.register("medical_record_oftalmologico_medical_exam", handler)
             }
-            onSaveMedicoSignature={(blob) => setMedicoResponsableSignatureBlob(blob)}
-            onSaveTrabajadorSignature={(blob) => setPatientSignatureBlob(blob)}
           />
         </Accordion>
         <Accordion collapsible type="single">
@@ -719,6 +720,20 @@ export default function MedicalHistoryPage({params}: PageProps) {
                         </div>
                       )}
                     </div>
+<div className="space-y-4">
+                    <p className="text-lg font-semibold">Firma del trabajador</p>
+                    {(!medicalRecord.medical_record_patient_signatures?.url || editPatientSig) ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <CanvasFirm uploadOnSave={false} onSave={(blob) => setPatientSignatureBlob(blob)} />
+                        {medicalRecord.medical_record_patient_signatures?.url && <button className="text-sm text-red-500 hover:underline" type="button" onClick={() => { setEditPatientSig(false); setPatientSignatureBlob(null); }}>Cancelar cambio</button>}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2">
+                        <img alt="Firma del trabajador" className="max-h-32 border border-gray-200" src={medicalRecord.medical_record_patient_signatures.url} />
+                        <button className="text-sm text-blue-500 hover:underline" type="button" onClick={() => setEditPatientSig(true)}>Cambiar firma</button>
+                      </div>
+                    )}
+                  </div>
                   </div>
                 </div>
               </div>

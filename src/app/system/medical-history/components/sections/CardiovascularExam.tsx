@@ -30,6 +30,7 @@ const normalizeBooleanFields = (
     soplos: toBool(data.soplos),
     pulsos_perifericos_ausentes: toBool(data.pulsos_perifericos_ausentes),
     varices: toBool(data.varices),
+    hta: toBool(data.hta),
   };
 };
 
@@ -240,6 +241,31 @@ export const CardiovascularExamSection = React.memo(({defaultValues, registerSec
               />
             </div>
 
+            <div className="flex items-center">
+              <p className="flex-1">HTA</p>
+              <Controller
+                control={control}
+                name="hta"
+                render={({field: {onChange, value}}) => (
+                  <div className="flex gap-3">
+                    <input
+                      aria-label="HTA: sí"
+                      checked={value === true}
+                      className="h-6 w-6 cursor-pointer"
+                      type="radio"
+                      onChange={() => onChange(true)}
+                    />
+                    <input
+                      aria-label="HTA: no"
+                      checked={value === false}
+                      className="h-6 w-6 cursor-pointer"
+                      type="radio"
+                      onChange={() => onChange(false)}
+                    />
+                  </div>
+                )}
+              />
+            </div>
             {/* Observaciones */}
             <div className="mt-4 flex flex-col gap-2">
               <span className="text-base font-semibold">Observaciones:</span>

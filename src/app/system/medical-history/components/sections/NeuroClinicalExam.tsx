@@ -28,6 +28,21 @@ const normalizeBooleanFields = (
     reflejos_alterados: toBool(data.reflejos_alterados),
     apraxia: toBool(data.apraxia),
     ataxia: toBool(data.ataxia),
+    stop_bang_snoring: toBool(data.stop_bang_snoring),
+    stop_bang_tiredness: toBool(data.stop_bang_tiredness),
+    stop_bang_observed_apnea: toBool(data.stop_bang_observed_apnea),
+    stop_bang_hypertension: toBool(data.stop_bang_hypertension),
+    stop_bang_bmi_over_35: toBool(data.stop_bang_bmi_over_35),
+    stop_bang_age_over_50: toBool(data.stop_bang_age_over_50),
+    stop_bang_neck_circumference: toBool(data.stop_bang_neck_circumference),
+    stop_bang_male: toBool(data.stop_bang_male),
+    sleep_disorder_snoring: toBool(data.sleep_disorder_snoring),
+    sleep_disorder_smoking: toBool(data.sleep_disorder_smoking),
+    sleep_disorder_hta: toBool(data.sleep_disorder_hta),
+    sleep_disorder_obesity: toBool(data.sleep_disorder_obesity),
+    sleep_disorder_short_neck: toBool(data.sleep_disorder_short_neck),
+    sleep_disorder_mallampati_3_4: toBool(data.sleep_disorder_mallampati_3_4),
+    sleep_disorder_stop_bang: toBool(data.sleep_disorder_stop_bang),
   };
 };
 
@@ -216,6 +231,70 @@ export const NeuroClinicalExamSection = React.memo(({defaultValues, registerSect
               />
             </div>
 
+            <div className="mt-6 w-full">
+              <h3 className="mb-2 font-semibold">Cuestionario STOP-BANG</h3>
+              <div className="overflow-x-auto">
+                <div className="min-w-[520px] overflow-hidden rounded-lg border border-gray-300 bg-white">
+                  <div className="grid grid-cols-[minmax(0,1fr)_5rem_5rem] bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-600">
+                    <span />
+                    <span className="text-center">Sí</span>
+                    <span className="text-center">No</span>
+                  </div>
+                  {([
+                    ["stop_bang_snoring","¿Ronca fuerte?"],
+                    ["stop_bang_tiredness","¿Se siente cansado o somnoliento durante el día?"],
+                    ["stop_bang_observed_apnea","¿Alguien observó que deja de respirar mientras duerme?"],
+                    ["stop_bang_hypertension","¿Tiene hipertensión arterial?"],
+                    ["stop_bang_bmi_over_35","¿Índice de masa corporal mayor a 35?"],
+                    ["stop_bang_age_over_50","¿Tiene más de 50 años?"],
+                    ["stop_bang_neck_circumference","¿Circunferencia del cuello mayor al umbral del cuestionario?"],
+                    ["stop_bang_male","¿Sexo masculino?"],
+                  ] as const).map(([field, label]) => (
+                    <div key={field} className="grid grid-cols-[minmax(0,1fr)_5rem_5rem] items-center border-t border-gray-200 px-3 py-2 text-sm">
+                      <span className="pr-2">{label}</span>
+                      <Controller control={control} name={field} render={({field: {onChange, value}}) => (
+                        <>
+                          <label className="flex items-center justify-center"><input aria-label={label + ": sí"} checked={value === true} type="radio" onChange={() => onChange(true)} /></label>
+                          <label className="flex items-center justify-center"><input aria-label={label + ": no"} checked={value === false} type="radio" onChange={() => onChange(false)} /></label>
+                        </>
+                      )} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <p className="mt-2 text-xs text-gray-600">3 o más respuestas afirmativas: riesgo elevado.</p>
+            </div>
+            <div className="mt-5 w-full">
+              <h3 className="mb-2 font-semibold">Trastorno del sueño</h3>
+              <div className="overflow-x-auto">
+                <div className="min-w-[520px] overflow-hidden rounded-lg border border-gray-300 bg-white">
+                  <div className="grid grid-cols-[minmax(0,1fr)_5rem_5rem] bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-600">
+                    <span />
+                    <span className="text-center">Sí</span>
+                    <span className="text-center">No</span>
+                  </div>
+                  {([
+                    ["sleep_disorder_snoring","Ronquido"],
+                    ["sleep_disorder_smoking","Tabaquismo"],
+                    ["sleep_disorder_hta","HTA"],
+                    ["sleep_disorder_obesity","Obesidad tipo II o más"],
+                    ["sleep_disorder_short_neck","Cuello corto"],
+                    ["sleep_disorder_mallampati_3_4","Mallampati (3 o 4)"],
+                    ["sleep_disorder_stop_bang","Cuestionario STOP-BANG positivo"],
+                  ] as const).map(([field, label]) => (
+                    <div key={field} className="grid grid-cols-[minmax(0,1fr)_5rem_5rem] items-center border-t border-gray-200 px-3 py-2 text-sm">
+                      <span className="pr-2">{label}</span>
+                      <Controller control={control} name={field} render={({field: {onChange, value}}) => (
+                        <>
+                          <label className="flex items-center justify-center"><input aria-label={label + ": sí"} checked={value === true} type="radio" onChange={() => onChange(true)} /></label>
+                          <label className="flex items-center justify-center"><input aria-label={label + ": no"} checked={value === false} type="radio" onChange={() => onChange(false)} /></label>
+                        </>
+                      )} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
             {/* Observaciones */}
             <div className="mt-4 flex flex-col gap-2">
               <span className="text-base font-semibold">Observaciones:</span>

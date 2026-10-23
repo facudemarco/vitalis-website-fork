@@ -28,6 +28,8 @@ const normalizeBooleanFields = (
     hepatitis_a: toBool(data.hepatitis_a),
     hepatitis_b: toBool(data.hepatitis_b),
     dengue: toBool(data.dengue),
+    fiebre_amarilla: toBool(data.fiebre_amarilla),
+    meningitis: toBool(data.meningitis),
   };
 };
 
@@ -241,6 +243,30 @@ export const ImmunizationsSection = React.memo(({defaultValues, registerSection}
             />
             <span />
           </div>
+          {(["fiebre_amarilla","meningitis"] as const).map((field) => (
+            <div key={field} className="grid grid-cols-[260px_120px_1fr] items-center">
+              <span className="text-lg text-gray-900">{field === "fiebre_amarilla" ? "Fiebre amarilla" : "Meningitis"}</span>
+              <Controller control={control} name={field} render={({field: {onChange, value}}) => (
+                <div className="flex justify-center gap-8">
+                  <input
+                    aria-label={field === "fiebre_amarilla" ? "Fiebre amarilla: sí" : "Meningitis: sí"}
+                    checked={value === true}
+                    className="radio"
+                    type="radio"
+                    onChange={() => onChange(true)}
+                  />
+                  <input
+                    aria-label={field === "fiebre_amarilla" ? "Fiebre amarilla: no" : "Meningitis: no"}
+                    checked={value === false}
+                    className="radio"
+                    type="radio"
+                    onChange={() => onChange(false)}
+                  />
+                </div>
+              )} />
+              <span />
+            </div>
+          ))}
         </div>
       </AccordionContent>
     </AccordionItem>
