@@ -111,6 +111,7 @@ export interface UserPatient {
   user_id: string;
   social_security: string;
   phone: string;
+  address?: string;
   insurance?: string;
   company_id?: string | null;
   company_name?: string | null;
