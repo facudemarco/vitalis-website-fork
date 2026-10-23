@@ -116,7 +116,7 @@ export default function ClientesAdminPage() {
 
   if (loading) {
     return (
-      <Panel pageIcon={<Clients />} pageTitle="Clientes">
+      <Panel pageIcon={<Clients />} pageTitle="Clientes" wide>
         <div className="flex h-full w-full items-center justify-center">
           <div className="h-16 w-16 animate-spin rounded-full border-4 border-t-4 border-gray-200 border-t-blue-600" />
         </div>
@@ -125,7 +125,7 @@ export default function ClientesAdminPage() {
   }
 
   return (
-    <Panel pageIcon={<Clients />} pageTitle="Clientes">
+    <Panel pageIcon={<Clients />} pageTitle="Clientes" wide>
       <div className="w-full">
         {/* Header verde con toggle */}
         <div className="grid grid-cols-2 text-center text-sm font-semibold">
