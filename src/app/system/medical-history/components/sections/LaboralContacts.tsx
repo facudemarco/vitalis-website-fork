@@ -54,7 +54,7 @@ export const LaboralContactsSection = React.memo(({defaultValues, registerSectio
 
   return (
     <AccordionItem value="item-6">
-      <AccordionTrigger>Estuvo alguna vez laboralmente en contacto con:</AccordionTrigger>
+      <AccordionTrigger>Está laboralmente en contacto con:</AccordionTrigger>
       <AccordionContent>
         <div className="relative">
           <img alt="Logo" className="absolute top-0 right-0" src="/logo.png" width={60} />
