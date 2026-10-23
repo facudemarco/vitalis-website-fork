@@ -157,27 +157,37 @@ export const PersonalHistorySection = React.memo(({defaultValues, registerSectio
                 name="dengue"
                 render={({field: {onChange, value}}) => (
                   <div className="flex gap-3">
-                    <input
-                      checked={value}
-                      className="h-6 w-6 cursor-pointer"
-                      type="radio"
-                      onChange={() => onChange(true)}
-                    />
-                    <input
-                      checked={!value}
-                      className="h-6 w-6 cursor-pointer"
-                      type="radio"
-                      onChange={() => onChange(false)}
-                    />
+                    <input checked={value} className="h-6 w-6 cursor-pointer" type="radio" onChange={() => onChange(true)} />
+                    <input checked={!value} className="h-6 w-6 cursor-pointer" type="radio" onChange={() => onChange(false)} />
                   </div>
                 )}
               />
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div><span>Medicamentos</span><Controller control={control} name="medications" render={({field: {onChange,value}}) => <div className="flex gap-4"><label><input checked={value === true} type="radio" onChange={() => onChange(true)} /> Sí</label><label><input checked={value === false} type="radio" onChange={() => onChange(false)} /> No</label></div>} /></div>
-              <input className="w-full border border-gray-500 p-2" placeholder="¿Cuáles medicamentos?" {...register("medications_details")} />
-              <div><span>Malformaciones</span><Controller control={control} name="malformations" render={({field: {onChange,value}}) => <div className="flex gap-4"><label><input checked={value === true} type="radio" onChange={() => onChange(true)} /> Sí</label><label><input checked={value === false} type="radio" onChange={() => onChange(false)} /> No</label></div>} /></div>
-              <input className="w-full border border-gray-500 p-2" placeholder="¿Cuáles malformaciones?" {...register("malformations_details")} />
             </div>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-2 border-b border-gray-200 pb-3">
+                <div className="flex items-center">
+                  <span className="flex-1 text-base">Medicamentos</span>
+                  <Controller control={control} name="medications" render={({field: {onChange, value}}) => (
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-1"><input checked={value === true} type="radio" onChange={() => onChange(true)} /> Sí</label>
+                      <label className="flex items-center gap-1"><input checked={value === false} type="radio" onChange={() => onChange(false)} /> No</label>
+                    </div>
+                  )} />
+                </div>
+                <input className="w-full border border-gray-500 p-2" placeholder="¿Cuáles medicamentos?" {...register("medications_details")} />
+              </div>
+              <div className="flex flex-col gap-2 border-b border-gray-200 pb-3">
+                <div className="flex items-center">
+                  <span className="flex-1 text-base">Malformaciones</span>
+                  <Controller control={control} name="malformations" render={({field: {onChange, value}}) => (
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-1"><input checked={value === true} type="radio" onChange={() => onChange(true)} /> Sí</label>
+                      <label className="flex items-center gap-1"><input checked={value === false} type="radio" onChange={() => onChange(false)} /> No</label>
+                    </div>
+                  )} />
+                </div>
+                <input className="w-full border border-gray-500 p-2" placeholder="¿Cuáles malformaciones?" {...register("malformations_details")} />
+              </div>
             </div>
           </div>
         </div>
