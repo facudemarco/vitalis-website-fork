@@ -63,12 +63,21 @@ export default function EstudiosPacientesPage({params}: PageProps) {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [consentFile, setConsentFile] = useState<File | null>(null);
   const consentFileInput = useRef<HTMLInputElement | null>(null);
+  const [heightFile, setHeightFile] = useState<File | null>(null);
+  const [uploadingHeight, setUploadingHeight] = useState(false);
+  const [heightError, setHeightError] = useState<string | null>(null);
+  const [heightSuccess, setHeightSuccess] = useState(false);
+  const heightFileInput = useRef<HTMLInputElement | null>(null);
 
   const existingConsent = studies.find(
     (study) => study.study_type?.trim().toLocaleLowerCase() === "consentimiento informado",
   );
   const hasConsentPdf = Boolean(existingConsent?.files?.length);
   const hasLegacyConsentWithoutPdf = Boolean(existingConsent && !existingConsent.files?.length);
+  const heightStudyType = "Cuestionario para trabajadores en altura, conducción de vehículos y trabajos en espacios confinados";
+  const existingHeightStudy = studies.find((study) => study.study_type?.trim().toLocaleLowerCase() === heightStudyType.toLocaleLowerCase());
+  const hasHeightPdf = Boolean(existingHeightStudy?.files?.length);
+  const hasLegacyHeightWithoutPdf = Boolean(existingHeightStudy && !existingHeightStudy.files?.length);
 
   useEffect(() => {
     const data = async () => {
@@ -122,6 +131,43 @@ export default function EstudiosPacientesPage({params}: PageProps) {
       setUploadingConsent(false);
     }
   };
+
+  const registerHeightStudy = async () => {
+    if (!heightFile) { setHeightError("Adjuntá el PDF completado del cuestionario."); return; }
+    if (!heightFile.name.toLowerCase().endsWith(".pdf")) { setHeightError("El cuestionario debe adjuntarse en formato PDF."); return; }
+    setUploadingHeight(true); setHeightError(null); setHeightSuccess(false);
+    try {
+      const formData = new FormData();
+      formData.append("study_type", heightStudyType);
+      formData.append("status", "Disponible");
+      formData.append("study_files", heightFile);
+      await dataService.postStudie(id, formData);
+      setStudies(await dataService.getStudiesByPatientId(id));
+      setHeightFile(null);
+      if (heightFileInput.current) heightFileInput.current.value = "";
+      setHeightSuccess(true);
+    } catch (error) {
+      const response = (error as {response?: {data?: {detail?: unknown}}})?.response;
+      setHeightError(typeof response?.data?.detail === "string" ? response.data.detail : "No se pudo cargar el cuestionario.");
+    } finally { setUploadingHeight(false); }
+  };
+
+  const heightUploadControl = (
+    <div className="flex flex-col items-start gap-2 rounded-lg border border-gray-200 p-3">
+      <p className="font-semibold">Cuestionario de altura</p>
+      {hasHeightPdf ? <p className="text-sm font-medium text-green-700">El cuestionario ya está registrado para este paciente.</p> : <>
+        <label className="flex flex-col gap-1 text-sm font-medium">
+          {hasLegacyHeightWithoutPdf ? "Adjuntar PDF al estudio existente" : "Subir cuestionario completado (PDF)"}
+          <input ref={heightFileInput} accept=".pdf,application/pdf" className="rounded-lg border border-gray-300 bg-white p-2" disabled={uploadingHeight} type="file" onChange={(event) => setHeightFile(event.target.files?.[0] || null)} />
+        </label>
+        <button className="rounded-lg bg-sky-600 px-4 py-2 font-semibold text-white disabled:opacity-60" disabled={uploadingHeight || !heightFile} type="button" onClick={() => void registerHeightStudy()}>
+          {uploadingHeight ? "Subiendo..." : "Subir cuestionario"}
+        </button>
+      </>}
+      {heightError && <p className="text-sm text-red-700">{heightError}</p>}
+      {heightSuccess && <p className="text-sm text-green-700">Cuestionario disponible.</p>}
+    </div>
+  );
 
   const consentUploadControl = (
     <div className="flex flex-col items-start gap-2">
@@ -185,6 +231,7 @@ export default function EstudiosPacientesPage({params}: PageProps) {
           </Link>
           <p>No hay estudios</p>
           {consentUploadControl}
+          {heightUploadControl}
         </section>
       </Panel>
     );
