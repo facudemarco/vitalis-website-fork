@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect} from "react";
 import {Controller, useForm} from "react-hook-form";
 
 import {
@@ -10,7 +10,6 @@ import {
 
 import {AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
 
-import CanvasFirm from "../CanvasFirm";
 import {SectionHandler} from "../../useFormRegistry";
 
 // Helper function to convert string booleans to actual booleans
@@ -65,10 +64,6 @@ interface Props {
   registerDDJJ: (handler: SectionHandler<MedicalRecordDDJJ>) => () => void;
   registerNeuro: (handler: SectionHandler<MedicalRecordNeuroMedicalExam>) => () => void;
   registerOftalmo: (handler: SectionHandler<MedicalRecordOftalmologicoMedicalExam>) => () => void;
-  onSaveMedicoSignature?: (blob: Blob) => void;
-  onSaveTrabajadorSignature?: (blob: Blob) => void;
-  existingMedicoSignatureUrl?: string | null;
-  existingTrabajadorSignatureUrl?: string | null;
 }
 
 export const CuestionarioRiesgoSection = React.memo(
@@ -81,10 +76,6 @@ export const CuestionarioRiesgoSection = React.memo(
     registerDDJJ,
     registerNeuro,
     registerOftalmo,
-    onSaveMedicoSignature,
-    onSaveTrabajadorSignature,
-    existingMedicoSignatureUrl,
-    existingTrabajadorSignatureUrl,
   }: Props) => {
     // Form for Cuestionario Riesgos
     const cuestionarioForm = useForm<MedicalRecordCuestionarioRiesgos>({
@@ -178,73 +169,10 @@ export const CuestionarioRiesgoSection = React.memo(
 
     return (
       <AccordionItem value="item-cuestionario-riesgo">
-        <AccordionTrigger>
-          Cuestionario para trabajadores en altura, conducción de vehículos y trabajos en espacios
-          confinados
-        </AccordionTrigger>
+        <AccordionTrigger>Declaraciones y exámenes complementarios</AccordionTrigger>
         <AccordionContent>
           <div className="relative">
             <img alt="Logo" className="absolute top-0 right-0" src="/logo.png" width={60} />
-
-            {/* ── Sección 1: Cuestionario para trabajadores ── */}
-            <div className="mb-6">
-              <p className="mb-4 text-lg font-semibold">
-                Cuestionario para trabajadores en altura, conducción de vehículos y trabajos en
-                espacios confinados
-              </p>
-
-              <div className="flex flex-col gap-3 text-lg">
-                {/* Empresa */}
-                <div className="flex items-center gap-4">
-                  <span className="w-[150px] shrink-0">Empresa</span>
-                  <input
-                    {...registerCuestionarioField("company_name")}
-                    className="w-full border border-gray-500 p-2 md:w-[300px]"
-                    type="text"
-                  />
-                </div>
-
-                {/* Apellido y nombre */}
-                <div className="flex items-center gap-4">
-                  <span className="w-[150px] shrink-0">Apellido y nombre</span>
-                  <input
-                    {...registerCuestionarioField("complete_name")}
-                    className="w-full border border-gray-500 p-2 md:w-[300px]"
-                    type="text"
-                  />
-                </div>
-
-                {/* DNI / Edad / Peso en una fila */}
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="shrink-0">DNI</span>
-                    <input
-                      {...registerCuestionarioField("dni", {valueAsNumber: true})}
-                      className="w-[120px] border border-gray-500 p-2"
-                      type="text"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="shrink-0">Edad</span>
-                    <input
-                      {...registerCuestionarioField("age", {valueAsNumber: true})}
-                      className="w-[80px] border border-gray-500 p-2"
-                      type="text"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="shrink-0">Peso</span>
-                    <input
-                      {...registerCuestionarioField("weight", {valueAsNumber: true})}
-                      className="w-[80px] border border-gray-500 p-2"
-                      type="text"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <hr className="my-6 border-gray-300" />
 
             {/* ── Sección 2: Declaración Jurada ── */}
             <div>
@@ -951,16 +879,7 @@ export const CuestionarioRiesgoSection = React.memo(
               </div>
             </div>
 
-            <hr className="my-6 border-gray-300" />
 
-            {/* ── Sección 5: Para completar por el médico ── */}
-            <ParaCompletarMedico
-              existingMedicoSignatureUrl={existingMedicoSignatureUrl}
-              existingTrabajadorSignatureUrl={existingTrabajadorSignatureUrl}
-              registerCuestionarioField={registerCuestionarioField}
-              onSaveMedicoSignature={onSaveMedicoSignature}
-              onSaveTrabajadorSignature={onSaveTrabajadorSignature}
-            />
           </div>
         </AccordionContent>
       </AccordionItem>
@@ -970,160 +889,3 @@ export const CuestionarioRiesgoSection = React.memo(
 
 CuestionarioRiesgoSection.displayName = "CuestionarioRiesgoSection";
 
-// ── Sub-componente: Para completar por el médico ──
-function ParaCompletarMedico({
-  registerCuestionarioField,
-  onSaveMedicoSignature,
-  onSaveTrabajadorSignature,
-  existingMedicoSignatureUrl,
-  existingTrabajadorSignatureUrl,
-}: {
-  registerCuestionarioField: ReturnType<
-    typeof useForm<MedicalRecordCuestionarioRiesgos>
-  >["register"];
-  onSaveMedicoSignature?: (blob: Blob) => void;
-  onSaveTrabajadorSignature?: (blob: Blob) => void;
-  existingMedicoSignatureUrl?: string | null;
-  existingTrabajadorSignatureUrl?: string | null;
-}) {
-  const [editMedicoSig, setEditMedicoSig] = useState(false);
-  const [editTrabajadorSig, setEditTrabajadorSig] = useState(false);
-
-  return (
-    <div>
-      <p className="mb-2 text-lg font-semibold">Para completar por el médico</p>
-      <p className="mb-4 text-base">
-        En las Evaluaciones realizadas en este formulario el día de la fecha:
-      </p>
-
-      <div className="flex flex-col gap-4">
-        {/* Opción 1: No se evidencian limitaciones */}
-        <label className="flex cursor-pointer items-start gap-3">
-          <input
-            className="mt-1 h-5 w-5 shrink-0 cursor-pointer"
-            type="checkbox"
-            {...registerCuestionarioField("es_apto")}
-          />
-          <span className="text-base font-semibold uppercase">
-            NO SE EVIDENCIAN LIMITACIONES PARA REALIZAR TRABAJO EN ALTURA, TRABAJO EN ESPACIOS
-            CONFINADOS Y CONDUCCIÓN DE VEHÍCULOS.
-          </span>
-        </label>
-
-        {/* Opción 2: Se evidencian limitaciones */}
-        <label className="flex cursor-pointer items-start gap-3">
-          <input
-            className="mt-1 h-5 w-5 shrink-0 cursor-pointer"
-            type="checkbox"
-            {...registerCuestionarioField("no_es_apto")}
-          />
-          <span className="text-base font-semibold uppercase">
-            SE EVIDENCIAN LIMITACIONES PARA REALIZAR TRABAJO EN ALTURA, TRABAJO EN ESPACIOS
-            CONFINADOS Y CONDUCCIÓN DE VEHÍCULOS. ESPECIFICAR LAS LIMITACIONES Y COMUNICAR AL
-            SERVICIO MÉDICO DE LA EMPRESA EN FORMA INMEDIATA.
-          </span>
-        </label>
-
-        {/* Textarea para especificar limitaciones */}
-        <textarea
-          className="h-24 w-full resize-none border border-gray-500 p-2"
-          placeholder="Especificar limitaciones..."
-          {...registerCuestionarioField("observations")}
-        />
-      </div>
-
-      {/* Firmas */}
-      <div className="mt-8 flex flex-col gap-8 md:flex-row md:gap-12">
-        {/* Firma médico responsable */}
-        <div className="flex flex-1 flex-col items-center gap-2">
-          {!existingMedicoSignatureUrl || editMedicoSig ? (
-            <div className="flex flex-col items-center gap-2">
-              <CanvasFirm
-                height={150}
-                uploadOnSave={false}
-                width={350}
-                onSave={(blob) => {
-                  onSaveMedicoSignature?.(blob);
-                }}
-              />
-              {existingMedicoSignatureUrl && (
-                <button
-                  className="text-sm text-red-500 hover:underline"
-                  type="button"
-                  onClick={() => {
-                    setEditMedicoSig(false);
-                    onSaveMedicoSignature?.(null as unknown as Blob);
-                  }}
-                >
-                  Cancelar cambio
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2">
-              <img
-                alt="Firma Médico Responsable"
-                className="max-h-36 border border-gray-200"
-                src={existingMedicoSignatureUrl}
-              />
-              <button
-                className="text-sm text-blue-500 hover:underline"
-                type="button"
-                onClick={() => setEditMedicoSig(true)}
-              >
-                Cambiar firma
-              </button>
-            </div>
-          )}
-          <p className="text-center text-sm font-semibold">
-            Firma y matrícula del médico responsable
-          </p>
-        </div>
-
-        {/* Firma trabajador */}
-        <div className="flex flex-1 flex-col items-center gap-2">
-          {!existingTrabajadorSignatureUrl || editTrabajadorSig ? (
-            <div className="flex flex-col items-center gap-2">
-              <CanvasFirm
-                height={150}
-                uploadOnSave={false}
-                width={350}
-                onSave={(blob) => {
-                  onSaveTrabajadorSignature?.(blob);
-                }}
-              />
-              {existingTrabajadorSignatureUrl && (
-                <button
-                  className="text-sm text-red-500 hover:underline"
-                  type="button"
-                  onClick={() => {
-                    setEditTrabajadorSig(false);
-                    onSaveTrabajadorSignature?.(null as unknown as Blob);
-                  }}
-                >
-                  Cancelar cambio
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2">
-              <img
-                alt="Firma Trabajador"
-                className="max-h-36 border border-gray-200"
-                src={existingTrabajadorSignatureUrl}
-              />
-              <button
-                className="text-sm text-blue-500 hover:underline"
-                type="button"
-                onClick={() => setEditTrabajadorSig(true)}
-              >
-                Cambiar firma
-              </button>
-            </div>
-          )}
-          <p className="text-center text-sm font-semibold">Firma y aclaración del trabajador</p>
-        </div>
-      </div>
-    </div>
-  );
-}
