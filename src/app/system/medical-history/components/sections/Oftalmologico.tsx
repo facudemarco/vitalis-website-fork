@@ -1,15 +1,18 @@
 import React, {useEffect} from "react";
 import {Controller, useForm} from "react-hook-form";
 
-import {MedicalRecordOftalmologicoExam} from "@/types";
+import {MedicalRecordOftalmologicoExam, MedicalRecordOphthalmology} from "@/types";
 
 import {AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
 
 import {SectionHandler} from "../../useFormRegistry";
+import {OphthalmologySection} from "./Ophthalmology";
 
 interface Props {
   defaultValues: MedicalRecordOftalmologicoExam | null;
   registerSection: (handler: SectionHandler<MedicalRecordOftalmologicoExam>) => () => void;
+  ophthalmologyValues: MedicalRecordOphthalmology | null;
+  registerOphthalmology: (handler: SectionHandler<MedicalRecordOphthalmology>) => () => void;
 }
 
 // Helper function to convert string booleans to actual booleans
@@ -29,7 +32,7 @@ const normalizeBooleanFields = (
   };
 };
 
-export const OftalmologicoExamSection = React.memo(({defaultValues, registerSection}: Props) => {
+export const OftalmologicoExamSection = React.memo(({defaultValues, registerSection, ophthalmologyValues, registerOphthalmology}: Props) => {
   const normalizedDefaults = normalizeBooleanFields(defaultValues);
 
   const form = useForm<MedicalRecordOftalmologicoExam>({
@@ -207,6 +210,7 @@ export const OftalmologicoExamSection = React.memo(({defaultValues, registerSect
             </div>
           </div>
         </div>
+      <OphthalmologySection defaultValues={ophthalmologyValues} registerSection={registerOphthalmology} embedded />
       </AccordionContent>
     </AccordionItem>
   );
