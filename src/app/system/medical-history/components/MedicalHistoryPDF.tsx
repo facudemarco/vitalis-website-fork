@@ -57,6 +57,7 @@ const styles = StyleSheet.create({
 
 interface MedicalHistoryPDFProps {
   medicalRecord: MedicalRecord;
+  patientCompanyName?: string | null;
 }
 
 const Checkbox = ({value}: {value?: boolean | null}) => (
@@ -90,7 +91,7 @@ const SiNoHeaders = () => (
 /* ================================================================
    COMPONENT
    ================================================================ */
-export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalRecord}) => {
+export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalRecord, patientCompanyName}) => {
   const {
     medical_record_data,
     medical_record_evaluation_type,
@@ -157,6 +158,7 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
   const studies = medical_record_studies;
   const deriv = medical_record_derivations;
   const cuest = medical_record_cuestionario_riesgos;
+  const companyName = d?.company_name?.trim() || patientCompanyName?.trim() || cuest?.company_name?.trim() || "Particular";
   const ddjj = medical_record_ddjj;
   const respon = medical_record_medical_responsable_signatures;
   const patient = medical_record_patient_signatures;
@@ -200,7 +202,7 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
                   <Text style={{fontSize: 11, fontWeight: "bold", color: "#2E5887"}}>EMPRESA</Text>
                 </View>
                 <View style={[styles.cell, styles.flex1, styles.lastCell, {justifyContent: "center"}]}>
-                  <Text style={{fontSize: 8}}>{d?.company_name || cuest?.company_name || "Particular"}</Text>
+                  <Text style={{fontSize: 8}}>{companyName}</Text>
                 </View>
               </View>
               <View style={[styles.row, {minHeight: 22}]}>
@@ -1233,7 +1235,7 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
           <View style={[styles.row, styles.noBorderBottom]}>
             <View style={[styles.cell, styles.flex1]}>
               <Text style={styles.label}>
-                Empresa: <Text style={{fontWeight: "normal"}}>{cuest?.company_name}</Text>
+                Empresa: <Text style={{fontWeight: "normal"}}>{cuest?.company_name?.trim() || companyName}</Text>
               </Text>
             </View>
           </View>
