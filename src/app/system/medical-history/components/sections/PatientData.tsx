@@ -28,10 +28,10 @@ export const PatientDataSection = React.memo(
       const unregister = registerSection({
         getValues: () => getValues(),
         validate: async () => trigger(),
-        getErrors: () =>
-          form.getFieldState("sons").error
-            ? ["Cantidad de hijos: ingresá un número entero igual o mayor a cero"]
-            : [],
+        getErrors: () => [
+          ...(form.getFieldState("education_level").error ? ["Estudios: seleccioná Primarios, Secundarios o Terciarios"] : []),
+          ...(form.getFieldState("sons").error ? ["Cantidad de hijos: ingresá un número entero igual o mayor a cero"] : []),
+        ],
       });
 
       return unregister;
@@ -59,6 +59,21 @@ export const PatientDataSection = React.memo(
         <div className="flex w-full flex-col gap-5 md:flex-row md:gap-4">
           <div className="grid flex-1 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             <input className="w-full border border-gray-500 p-2" placeholder="Empresa (o Particular)" type="text" {...register("company_name")} />
+            <div className="flex flex-col gap-3 md:col-span-2 xl:col-span-3">
+              <label className="flex flex-col gap-1 text-sm font-semibold" htmlFor="patient-education-level">
+                Estudios *
+                <select id="patient-education-level" className="w-full border border-gray-500 bg-white p-2 font-normal" {...register("education_level", {required: "Seleccioná el nivel de estudios."})}>
+                  <option value="">Seleccionar estudios</option>
+                  <option value="Primarios">Primarios</option>
+                  <option value="Secundarios">Secundarios</option>
+                  <option value="Terciarios">Terciarios</option>
+                </select>
+              </label>
+              <label className="flex flex-col gap-1 text-sm font-semibold" htmlFor="patient-sector">
+                Sector
+                <input id="patient-sector" className="w-full border border-gray-500 p-2 font-normal" placeholder="Sector de trabajo" maxLength={255} type="text" {...register("sector")} />
+              </label>
+            </div>
             <input
               className="w-full border border-gray-500 p-2"
               placeholder="Nombre completo"
