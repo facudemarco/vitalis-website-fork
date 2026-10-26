@@ -148,7 +148,7 @@ export default function MedicalHistoryPage({params}: PageProps) {
   const handlePrint = async () => {
     if (!medicalRecord) return;
     try {
-      const blob = await pdf(<MedicalHistoryPDF medicalRecord={medicalRecord} />).toBlob();
+      const blob = await pdf(<MedicalHistoryPDF medicalRecord={medicalRecord} patientCompanyName={patientCompanyName} />).toBlob();
       const url = URL.createObjectURL(blob);
 
       window.open(url, "_blank");

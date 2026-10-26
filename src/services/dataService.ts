@@ -222,6 +222,14 @@ export const dataService = {
   /**
    * Agregar un archivo a un estudio existente (e.g. un informe)
    */
+  async deleteStudy(studyId: string): Promise<void> {
+    await apiClient.delete(`/studies/${studyId}`, {withCredentials: true});
+  },
+
+  async deleteStudyFile(studyId: string, fileId: string): Promise<void> {
+    await apiClient.delete(`/studies/${studyId}/files/${fileId}`, {withCredentials: true});
+  },
+
   async uploadStudyFile(studyId: string, file: File, isReport = false): Promise<any> {
     const formData = new FormData();
     formData.append("file", file);

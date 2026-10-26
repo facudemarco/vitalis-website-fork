@@ -261,6 +261,8 @@ export interface MedicalRecordData {
   id: string;
   medical_record_id: string;
   company_name?: string | null;
+  education_level?: "Primarios" | "Secundarios" | "Terciarios" | null;
+  sector?: string | null;
   sons?: number | null;
   nacionality: string;
   phone: number;

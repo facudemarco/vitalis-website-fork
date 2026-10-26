@@ -57,6 +57,7 @@ const styles = StyleSheet.create({
 
 interface MedicalHistoryPDFProps {
   medicalRecord: MedicalRecord;
+  patientCompanyName?: string | null;
 }
 
 const Checkbox = ({value}: {value?: boolean | null}) => (
@@ -90,7 +91,7 @@ const SiNoHeaders = () => (
 /* ================================================================
    COMPONENT
    ================================================================ */
-export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalRecord}) => {
+export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalRecord, patientCompanyName}) => {
   const {
     medical_record_data,
     medical_record_evaluation_type,
@@ -157,6 +158,7 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
   const studies = medical_record_studies;
   const deriv = medical_record_derivations;
   const cuest = medical_record_cuestionario_riesgos;
+  const companyName = d?.company_name?.trim() || patientCompanyName?.trim() || cuest?.company_name?.trim() || "Particular";
   const ddjj = medical_record_ddjj;
   const respon = medical_record_medical_responsable_signatures;
   const patient = medical_record_patient_signatures;
@@ -191,114 +193,87 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
       <Page size="A4" style={styles.page}>
         <Header />
 
-        {/* EMPRESA */}
-        <View style={styles.tableContainer}>
-          <SectionHeader title="EMPRESA" />
-          <View style={[styles.row, styles.noBorderBottom]}>
-            <View style={[styles.cell, styles.w100, styles.lastCell]}>
-              <Text style={styles.value}> </Text>
+        {/* DATOS PERSONALES: formato de ficha impresa */}
+        <View style={styles.tableContainer} wrap={false}>
+          <View style={{flexDirection: "row"}}>
+            <View style={{width: "80%"}}>
+              <View style={[styles.row, {minHeight: 23}]}>
+                <View style={[styles.cell, {width: 90, backgroundColor: "#93C47D", justifyContent: "center"}]}>
+                  <Text style={{fontSize: 11, fontWeight: "bold", color: "#2E5887"}}>EMPRESA</Text>
+                </View>
+                <View style={[styles.cell, styles.flex1, styles.lastCell, {justifyContent: "center"}]}>
+                  <Text style={{fontSize: 8}}>{companyName}</Text>
+                </View>
+              </View>
+              <View style={[styles.row, {minHeight: 22}]}>
+                <View style={[styles.cell, styles.flex1, {backgroundColor: "#93C47D", justifyContent: "center"}]}>
+                  <Text style={{fontSize: 10, fontWeight: "bold", color: "#2E5887"}}>DATOS PERSONALES</Text>
+                </View>
+                <View style={[styles.cell, styles.lastCell, {width: 120, justifyContent: "center"}]}>
+                  <Text style={styles.label}>Fecha: <Text style={{fontWeight: "normal"}}>{new Date().toLocaleDateString("es-AR")}</Text></Text>
+                </View>
+              </View>
+              <View style={[styles.row, {minHeight: 24}]}>
+                <View style={[styles.cell, styles.w100, styles.lastCell, {justifyContent: "center"}]}>
+                  <Text style={styles.label}>Apellido y nombres: <Text style={{fontWeight: "normal"}}>{d?.complete_name}</Text></Text>
+                </View>
+              </View>
+              <View style={[styles.row, {minHeight: 23}]}>
+                <View style={[styles.cell, styles.flex1, {justifyContent: "center"}]}>
+                  <Text style={styles.label}>Fecha de Nac.: <Text style={{fontWeight: "normal"}}>{d?.date_of_birthday}</Text></Text>
+                </View>
+                <View style={[styles.cell, styles.flex1, styles.lastCell, {justifyContent: "center"}]}>
+                  <Text style={styles.label}>Nacionalidad: <Text style={{fontWeight: "normal"}}>{d?.nacionality}</Text></Text>
+                </View>
+              </View>
+              <View style={[styles.row, styles.noBorderBottom, {minHeight: 23}]}>
+                <View style={[styles.cell, styles.flex1, {justifyContent: "center"}]}>
+                  <Text style={styles.label}>Estado Civil: <Text style={{fontWeight: "normal"}}>{d?.civil_status}</Text></Text>
+                </View>
+                <View style={[styles.cell, styles.flex1, styles.lastCell, {justifyContent: "center"}]}>
+                  <Text style={styles.label}>D.N.I.: <Text style={{fontWeight: "normal"}}>{d?.dni}</Text></Text>
+                </View>
+              </View>
+            </View>
+            <View style={{width: "20%", borderLeftWidth: 1, borderLeftColor: "#000", padding: 5, justifyContent: "center", alignItems: "center"}}>
+              {img?.url
+                ? <Image src={img.url} style={{width: 90, height: 105, objectFit: "contain"}} />
+                : <Text style={{fontSize: 10, color: "#555"}}>FOTO</Text>}
             </View>
           </View>
-        </View>
-
-        {/* DATOS PERSONALES + FOTO */}
-        <View style={styles.tableContainer}>
-          <View style={{flexDirection: "row"}}>
-            <View style={styles.w70}>
-              <View style={styles.row}>
-                <View style={[styles.cell, styles.flex1, {backgroundColor: "#93C47D"}]}>
-                  <Text style={styles.label}>DATOS PERSONALES</Text>
-                </View>
-                <View
-                  style={[
-                    styles.cell,
-                    {width: 130, flexDirection: "row", alignItems: "center"},
-                    styles.lastCell,
-                  ]}
-                >
-                  <Text style={styles.label}>Fecha</Text>
-                  <Text style={styles.value}>{new Date().toLocaleDateString()}</Text>
-                </View>
-              </View>
-              <View style={styles.row}>
-                <View style={[styles.cell, styles.w100, styles.lastCell]}>
-                  <Text style={styles.label}>
-                    Apellido y Nombres:{" "}
-                    <Text style={{fontWeight: "normal"}}>{d?.complete_name}</Text>
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.row}>
-                <View style={[styles.cell, styles.flex1]}>
-                  <Text style={styles.label}>
-                    Fecha de Nac.: <Text style={{fontWeight: "normal"}}>{d?.date_of_birthday}</Text>
-                  </Text>
-                </View>
-                <View style={[styles.cell, styles.flex1, styles.lastCell]}>
-                  <Text style={styles.label}>
-                    Nacionalidad: <Text style={{fontWeight: "normal"}}>{d?.nacionality}</Text>
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.row}>
-                <View style={[styles.cell, styles.flex1]}>
-                  <Text style={styles.label}>
-                    Estado Civil: <Text style={{fontWeight: "normal"}}>{d?.civil_status}</Text>
-                  </Text>
-                </View>
-                <View style={[styles.cell, styles.flex1]}>
-                  <Text style={styles.label}>
-                    D.N.I.: <Text style={{fontWeight: "normal"}}>{d?.dni}</Text>
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.row}>
-                <View style={[styles.cell, styles.flex1]}>
-                  <Text style={styles.label}>
-                    Calle: <Text style={{fontWeight: "normal"}}>{d?.address}</Text>
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.row}>
-                <View style={[styles.cell, styles.flex1]}>
-                  <Text style={styles.label}>
-                    Teléfono: <Text style={{fontWeight: "normal"}}>{d?.phone}</Text>
-                  </Text>
-                </View>
-                <View style={[styles.cell, styles.flex1]}>
-                  <Text style={styles.label}>
-                    E-mail: <Text style={{fontWeight: "normal"}}>{d?.email}</Text>
-                  </Text>
-                </View>
-                <View style={[styles.cell, {width: 50}, styles.lastCell]}>
-                  <Text style={styles.label}>
-                    Hijos: <Text style={{fontWeight: "normal"}}>{d?.sons}</Text>
-                  </Text>
-                </View>
-              </View>
-              <View style={[styles.row, styles.noBorderBottom]}>
-                <View style={[styles.cell, styles.w100, styles.lastCell]}>
-                  <Text style={styles.label}>
-                    Tareas a realizar / realiza:{" "}
-                    <Text style={{fontWeight: "normal"}}>{d?.tasks}</Text>
-                  </Text>
-                </View>
-              </View>
+          <View style={[styles.row, {borderTopWidth: 1, borderTopColor: "#000", minHeight: 22}]}>
+            <View style={[styles.cell, styles.w100, styles.lastCell, {justifyContent: "center"}]}>
+              <Text style={styles.label}>Calle / domicilio: <Text style={{fontWeight: "normal"}}>{d?.address}</Text></Text>
             </View>
-            <View
-              style={[
-                styles.w30,
-                {
-                  borderLeftWidth: 1,
-                  borderLeftColor: "#000",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 180,
-                  height: 100,
-                },
-              ]}
-            >
-              <Image src={img?.url} />
+          </View>
+          <View style={[styles.row, {minHeight: 22}]}>
+            <View style={[styles.cell, {width: "35%", justifyContent: "center"}]}>
+              <Text style={styles.label}>Teléfono: <Text style={{fontWeight: "normal"}}>{d?.phone}</Text></Text>
+            </View>
+            <View style={[styles.cell, styles.flex1, {justifyContent: "center"}]}>
+              <Text style={styles.label}>E-mail: <Text style={{fontWeight: "normal"}}>{d?.email}</Text></Text>
+            </View>
+            <View style={[styles.cell, styles.lastCell, {width: 65, justifyContent: "center"}]}>
+              <Text style={styles.label}>Hijos: <Text style={{fontWeight: "normal"}}>{d?.sons}</Text></Text>
+            </View>
+          </View>
+          <View style={[styles.row, {minHeight: 22}]}>
+            <View style={[styles.cell, styles.w100, styles.lastCell, {justifyContent: "center"}]}>
+              <Text style={styles.label}>Tareas a realizar / realiza: <Text style={{fontWeight: "normal"}}>{d?.tasks}</Text></Text>
+            </View>
+          </View>
+          <View style={[styles.row, styles.noBorderBottom, {minHeight: 24}]}>
+            <View style={[styles.cell, {width: "61%", flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 4}]}>
+              <Text style={styles.label}>Estudios:</Text>
+              {(["Primarios", "Secundarios", "Terciarios"] as const).map((level) => (
+                <View key={level} style={{flexDirection: "row", alignItems: "center", gap: 3}}>
+                  <Text style={{fontSize: 8}}>{level}</Text>
+                  <Checkbox value={d?.education_level === level} />
+                </View>
+              ))}
+            </View>
+            <View style={[styles.cell, styles.flex1, styles.lastCell, {justifyContent: "center"}]}>
+              <Text style={styles.label}>Sector: <Text style={{fontWeight: "normal"}}>{d?.sector || "—"}</Text></Text>
             </View>
           </View>
         </View>
@@ -1260,7 +1235,7 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
           <View style={[styles.row, styles.noBorderBottom]}>
             <View style={[styles.cell, styles.flex1]}>
               <Text style={styles.label}>
-                Empresa: <Text style={{fontWeight: "normal"}}>{cuest?.company_name}</Text>
+                Empresa: <Text style={{fontWeight: "normal"}}>{cuest?.company_name?.trim() || companyName}</Text>
               </Text>
             </View>
           </View>

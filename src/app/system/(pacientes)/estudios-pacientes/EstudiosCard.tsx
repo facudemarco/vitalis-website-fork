@@ -23,6 +23,43 @@ export default function EstudiosCard({studies}: {studies: Studies}) {
   const [showUploadModal, setShowUploadModal] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState<boolean>(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleted, setDeleted] = useState(false);
+  const [remainingFiles, setRemainingFiles] = useState(studies.files || []);
+  const [deleteError, setDeleteError] = useState("");
+  const canDelete = userData?.role === "admin" || userData?.role === "secretary";
+
+  useEffect(() => { setRemainingFiles(studies.files || []); }, [studies.files]);
+
+  const deleteFile = async (fileId: string, filename: string, isReport: boolean) => {
+    if (!canDelete || deleting) return;
+    if (!window.confirm(`¿Eliminar definitivamente ${isReport ? "el informe" : "el archivo del estudio"} "${filename}"? Esta acción no se puede deshacer.`)) return;
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      await dataService.deleteStudyFile(studies.id, fileId);
+      setRemainingFiles((files) => files.filter((file) => file.id !== fileId));
+    } catch {
+      setDeleteError("No se pudo eliminar el archivo. Intentá nuevamente.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const deleteStudy = async () => {
+    if (!canDelete || deleting) return;
+    if (!window.confirm(`¿Eliminar definitivamente el estudio "${studies.study_type}" y todos sus archivos e informes? Esta acción no se puede deshacer.`)) return;
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      await dataService.deleteStudy(studies.id);
+      setDeleted(true);
+    } catch {
+      setDeleteError("No se pudo eliminar el estudio. Intentá nuevamente.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -134,13 +171,15 @@ export default function EstudiosCard({studies}: {studies: Studies}) {
     }
   };
 
-  const files = studies.files || [];
+  const files = remainingFiles;
   const studyFiles = files.filter((file) => !file.is_report);
   const reportFiles = files.filter((file) => file.is_report);
 
+  if (deleted) return null;
+
   return (
     <>
-      <section className="bg-blue md:text-md flex w-full items-center justify-between gap-5 rounded-xl p-5 text-sm text-white">
+      <section className="bg-blue md:text-md flex w-full flex-wrap items-center justify-between gap-5 rounded-xl p-5 text-sm text-white">
         <div className="flex gap-2">
           <img alt="image-estudie" className="size-10" src="/estudios1.png" />
           <div>
@@ -262,6 +301,23 @@ export default function EstudiosCard({studies}: {studies: Studies}) {
             </div>
           )}
         </div>
+        {canDelete && (
+          <div className="flex w-full flex-col gap-2 border-t border-white/30 pt-3">
+            <p className="font-semibold">Administrar estudio y archivos</p>
+            {files.map((file) => (
+              <div key={file.id} className="flex flex-wrap items-center justify-between gap-2">
+                <span className="min-w-0 break-all">{file.is_report ? "Informe" : "Estudio"}: {file.original_filename}</span>
+                <button type="button" disabled={deleting || uploading} className="cursor-pointer rounded border border-red-200 px-3 py-1 text-red-100 disabled:opacity-50" onClick={() => void deleteFile(file.id, file.original_filename, Boolean(file.is_report))}>
+                  Eliminar {file.is_report ? "informe" : "archivo"}
+                </button>
+              </div>
+            ))}
+            <button type="button" disabled={deleting || uploading} className="mt-1 w-fit cursor-pointer rounded bg-red-700 px-3 py-2 text-white disabled:opacity-50" onClick={() => void deleteStudy()}>
+              {deleting ? "Eliminando..." : "Eliminar estudio completo"}
+            </button>
+            {deleteError && <p role="alert" className="text-red-100">{deleteError}</p>}
+          </div>
+        )}
       </section>
 
       {/* Upload Report Modal */}
