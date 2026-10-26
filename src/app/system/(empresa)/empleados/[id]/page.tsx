@@ -60,7 +60,7 @@ export default function EstudiosPacientesPage({params}: PageProps) {
         return;
       }
 
-      const blob = await pdf(<MedicalHistoryPDF medicalRecord={active} />).toBlob();
+      const blob = await pdf(<MedicalHistoryPDF medicalRecord={active} patientCompanyName={data?.company_name} />).toBlob();
       const url = URL.createObjectURL(blob);
 
       window.open(url, "_blank");
