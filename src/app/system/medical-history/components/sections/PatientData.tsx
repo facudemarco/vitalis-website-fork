@@ -21,6 +21,10 @@ export const PatientDataSection = React.memo(
     });
 
     const {getValues, trigger, register} = form;
+    const ageInput = register("age", {
+      validate: (value) => !value || /^(?:[1-9][0-9]?|1[0-4][0-9]|150)$/.test(value) || "Ingresá una edad entre 1 y 150, sin decimales.",
+      setValueAs: (value) => value === "" ? null : value,
+    });
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl ?? null);
 
@@ -29,6 +33,7 @@ export const PatientDataSection = React.memo(
         getValues: () => getValues(),
         validate: async () => trigger(),
         getErrors: () => [
+          ...(form.getFieldState("age").error ? ["Edad: ingresá un número entre 1 y 150, sin decimales"] : []),
           ...(form.getFieldState("sons").error ? ["Cantidad de hijos: ingresá un número entero igual o mayor a cero"] : []),
         ],
       });
@@ -76,6 +81,27 @@ export const PatientDataSection = React.memo(
               type="text"
               {...register("civil_status")}
             />
+            <label className="flex flex-col gap-1 text-sm font-semibold" htmlFor="patient-age">
+              Edad
+              <input
+                {...ageInput}
+                id="patient-age"
+                className="w-full border border-gray-500 p-2 font-normal"
+                placeholder="Edad (1 a 150)"
+                type="text"
+                inputMode="numeric"
+                maxLength={3}
+                pattern="(?:[1-9][0-9]?|1[0-4][0-9]|150)"
+                onChange={(event) => {
+                  const value = event.target.value;
+                  if (value === "" || /^(?:[1-9][0-9]?|1[0-4][0-9]|150)$/.test(value)) {
+                    void ageInput.onChange(event);
+                  } else {
+                    event.target.value = getValues("age") ?? "";
+                  }
+                }}
+              />
+            </label>
             <input
               className="w-full border border-gray-500 p-2"
               placeholder="DNI"

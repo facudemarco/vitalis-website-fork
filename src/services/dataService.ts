@@ -12,6 +12,7 @@ import type {
 } from "@/types";
 
 import {apiClient} from "@/lib/axios";
+import {normalizeMedicalRecordDefaults} from "@/lib/medicalRecordDefaults";
 
 export type User = UserAdmin | UserCompany | UserPatient | UserProfessional | UserSecretary;
 
@@ -338,7 +339,7 @@ export const dataService = {
 
     if (!response.data) throw new Error("Error fetching medical record");
 
-    return response.data as MedicalRecord[];
+    return (response.data as MedicalRecord[]).map((record) => normalizeMedicalRecordDefaults(record));
   },
 
   async updateMedicalRecord(
