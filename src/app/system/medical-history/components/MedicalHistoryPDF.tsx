@@ -2,6 +2,7 @@ import React from "react";
 import {Page, Text, View, Document, StyleSheet, Image} from "@react-pdf/renderer";
 
 import {MedicalRecord} from "@/types";
+import {normalizeMedicalRecordDefaults} from "@/lib/medicalRecordDefaults";
 
 const styles = StyleSheet.create({
   page: {padding: 15, fontSize: 9, fontFamily: "Helvetica", color: "#000"},
@@ -91,7 +92,8 @@ const SiNoHeaders = () => (
 /* ================================================================
    COMPONENT
    ================================================================ */
-export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalRecord, patientCompanyName}) => {
+export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalRecord: record, patientCompanyName}) => {
+  const medicalRecord = normalizeMedicalRecordDefaults(record, true);
   const {
     medical_record_data,
     medical_record_evaluation_type,
@@ -230,8 +232,11 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
                 <View style={[styles.cell, styles.flex1, {justifyContent: "center"}]}>
                   <Text style={styles.label}>Estado Civil: <Text style={{fontWeight: "normal"}}>{d?.civil_status}</Text></Text>
                 </View>
-                <View style={[styles.cell, styles.flex1, styles.lastCell, {justifyContent: "center"}]}>
+                <View style={[styles.cell, styles.flex1, {justifyContent: "center"}]}>
                   <Text style={styles.label}>D.N.I.: <Text style={{fontWeight: "normal"}}>{d?.dni}</Text></Text>
+                </View>
+                <View style={[styles.cell, styles.lastCell, {width: 65, justifyContent: "center"}]}>
+                  <Text style={styles.label}>Edad: <Text style={{fontWeight: "normal"}}>{d?.age || "—"}</Text></Text>
                 </View>
               </View>
             </View>
@@ -1250,7 +1255,7 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
             </View>
             <View style={[styles.cell, styles.flex1]}>
               <Text style={styles.label}>
-                Edad: <Text style={{fontWeight: "normal"}}>{cuest?.age}</Text>
+                Edad: <Text style={{fontWeight: "normal"}}>{cuest?.age ?? d?.age}</Text>
               </Text>
             </View>
             <View style={[styles.cell, styles.flex1, styles.lastCell]}>

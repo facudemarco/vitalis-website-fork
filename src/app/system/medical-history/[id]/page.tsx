@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/accordion";
 import {dataService} from "@/services/dataService";
 import {getMedicalRecordErrorMessage} from "@/lib/medicalRecordErrors";
+import {normalizeMedicalRecordDefaults} from "@/lib/medicalRecordDefaults";
 
 import {MedicalHistoryPDF} from "../components/MedicalHistoryPDF";
 import {MedicalHistoryHeader} from "../components/MedicalHistoryHeader";
@@ -93,7 +94,11 @@ export default function MedicalHistoryPage({params}: PageProps) {
   const handlePrint = async () => {
     if (!medicalRecord) return;
     try {
-      const blob = await pdf(<MedicalHistoryPDF medicalRecord={medicalRecord} patientCompanyName={patientCompanyName} />).toBlob();
+      const snapshot = {...medicalRecord};
+      for (const [key, handler] of registry.getAll()) {
+        (snapshot as unknown as Record<string, unknown>)[key] = handler.getValues();
+      }
+      const blob = await pdf(<MedicalHistoryPDF medicalRecord={normalizeMedicalRecordDefaults(snapshot)} patientCompanyName={patientCompanyName} />).toBlob();
       const url = URL.createObjectURL(blob);
 
       window.open(url, "_blank");
@@ -196,7 +201,7 @@ export default function MedicalHistoryPage({params}: PageProps) {
 
       let result: MedicalRecord;
 
-      const dataToSend: any = {...merged};
+      const dataToSend: any = normalizeMedicalRecordDefaults(merged);
 
       // Sanitize data to remove top-level fields that are handled separately or shouldn't be in the JSON data
       delete dataToSend.id;

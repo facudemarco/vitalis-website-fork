@@ -263,6 +263,7 @@ export interface MedicalRecordData {
   company_name?: string | null;
   education_level?: "Primarios" | "Secundarios" | "Terciarios" | null;
   sector?: string | null;
+  age?: string | null;
   sons?: number | null;
   nacionality: string;
   phone: number;

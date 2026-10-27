@@ -3,6 +3,7 @@ const medicalRecordFieldLabels: Record<string, string> = {
   education_level: "Estudios",
   sector: "Sector",
   phone: "Teléfono",
+  age: "Edad",
 };
 
 const getMedicalRecordFieldLabel = (field: unknown) => {
@@ -18,6 +19,8 @@ const getMedicalRecordValidationMessage = (item: {
   const path = item.loc?.filter((part) => !["body", "data"].includes(String(part))) ?? [];
   const label = getMedicalRecordFieldLabel(path.at(-1));
   const field = String(path.at(-1) ?? "");
+
+  if (field === "age") return "Edad: ingresá un número entre 1 y 150, sin decimales.";
 
   if (item.type === "int_parsing" || item.type === "int_from_float") {
     return field === "sons"
