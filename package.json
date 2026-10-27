@@ -6,7 +6,12 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:hc:unit": "node --test tests/medical-record-defaults.test.cjs tests/medical-record-errors.test.cjs tests/medical-history-print.test.cjs",
+    "test:hc:web": "playwright test",
+    "test:hc:audit": "node scripts/audit-hc-print.cjs",
+    "test:hc": "npm run test:hc:unit && npm run test:hc:web && npm run test:hc:audit",
+    "test:hc:all": "node scripts/check-hc.cjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.12",
@@ -34,6 +39,7 @@
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.38.0",
     "@next/eslint-plugin-next": "^16.0.0",
+    "@playwright/test": "^1.64.1",
     "@stylistic/eslint-plugin": "^5.5.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24.9.2",

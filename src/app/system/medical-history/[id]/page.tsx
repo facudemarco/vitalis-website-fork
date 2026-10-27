@@ -46,7 +46,6 @@ import {OsteoarticularExamSection} from "../components/sections/OsteoarticularEx
 import {NeuroClinicalExamSection} from "../components/sections/NeuroClinicalExam";
 import {PsychiatricClinicalExamSection} from "../components/sections/PsychiatricClinicalExam";
 import {ImmunizationsSection} from "../components/sections/Immunizations";
-import {CuestionarioRiesgoSection} from "../components/sections/CuestionarioRiesgo";
 import CanvasFirm from "../components/CanvasFirm";
 
 // const raleway = Raleway({
@@ -513,24 +512,6 @@ export default function MedicalHistoryPage({params}: PageProps) {
           <StudiesDoneSection
             defaultValues={medicalRecord.medical_record_studies ?? null}
             registerSection={(handler) => registry.register("medical_record_studies", handler)}
-          />
-        </Accordion>
-        <Accordion collapsible type="single">
-          <CuestionarioRiesgoSection
-            defaultValuesCuestionario={medicalRecord.medical_record_cuestionario_riesgos ?? null}
-            defaultValuesDDJJ={medicalRecord.medical_record_ddjj ?? null}
-            defaultValuesNeuro={medicalRecord.medical_record_neuro_medical_exam ?? null}
-            defaultValuesOftalmo={medicalRecord.medical_record_oftalmologico_medical_exam ?? null}
-            registerCuestionario={(handler) =>
-              registry.register("medical_record_cuestionario_riesgos", handler)
-            }
-            registerDDJJ={(handler) => registry.register("medical_record_ddjj", handler)}
-            registerNeuro={(handler) =>
-              registry.register("medical_record_neuro_medical_exam", handler)
-            }
-            registerOftalmo={(handler) =>
-              registry.register("medical_record_oftalmologico_medical_exam", handler)
-            }
           />
         </Accordion>
         <Accordion collapsible type="single">
