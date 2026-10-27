@@ -166,7 +166,7 @@ export const PatientDataSection = React.memo(
         <div className="mb-10 flex w-full flex-col gap-3">
           <label className="flex flex-col gap-1 text-sm font-semibold" htmlFor="patient-education-level">
             Estudios
-            <select id="patient-education-level" className="w-full border border-gray-500 bg-white p-2 font-normal" {...register("education_level", {setValueAs: (value) => value || null})}>
+            <select id="patient-education-level" className="w-full min-w-0 border border-gray-500 bg-white p-2 font-normal md:max-w-sm" {...register("education_level", {setValueAs: (value) => value || null})}>
               <option value="">Sin especificar</option>
               <option value="Primarios">Primarios</option>
               <option value="Secundarios">Secundarios</option>
