@@ -89,6 +89,147 @@ const SiNoHeaders = () => (
   </View>
 );
 
+// Fields added to the web form after the original paper template.
+const additionalSections: {
+  section: keyof MedicalRecord;
+  title: string;
+  fields: [string, string][];
+}[] = [
+  {
+    section: "medical_record_evaluation_type",
+    title: "TIPO DE EVALUACIÓN - COMPLEMENTO",
+    fields: [
+      ["other_boolean", "Otra evaluación"],
+      ["examen_psicofisico", "Examen psicofísico"],
+    ],
+  },
+  {
+    section: "medical_record_personal_history",
+    title: "ANTECEDENTES PERSONALES - COMPLEMENTO",
+    fields: [
+      ["medications", "Medicamentos"],
+      ["medications_details", "Detalle de medicamentos"],
+      ["malformations", "Malformaciones"],
+      ["malformations_details", "Detalle de malformaciones"],
+    ],
+  },
+  {
+    section: "medical_record_oftalmologico_exam",
+    title: "EXAMEN OFTALMOLÓGICO - OBSERVACIONES",
+    fields: [["observations", "Observaciones"]],
+  },
+  {
+    section: "medical_record_cardiovascular_exam",
+    title: "EXAMEN CARDIOVASCULAR - COMPLEMENTO",
+    fields: [["hta", "Hipertensión arterial (HTA)"]],
+  },
+  {
+    section: "medical_record_orl_exam",
+    title: "EXAMEN ORL - OBSERVACIONES",
+    fields: [["observations", "Observaciones"]],
+  },
+  {
+    section: "medical_record_head_exam",
+    title: "CABEZA Y CUELLO - COMPLEMENTO",
+    fields: [["mallampati", "Mallampati"]],
+  },
+  {
+    section: "medical_record_immunizations",
+    title: "INMUNIZACIONES - COMPLEMENTO",
+    fields: [
+      ["fiebre_amarilla", "Fiebre amarilla"],
+      ["meningitis", "Meningitis"],
+    ],
+  },
+  {
+    section: "medical_record_neuro_clinical_exam",
+    title: "NEUROLÓGICO - STOP-BANG",
+    fields: [
+      ["stop_bang_snoring", "Ronquido"],
+      ["stop_bang_tiredness", "Cansancio"],
+      ["stop_bang_observed_apnea", "Apneas observadas"],
+      ["stop_bang_hypertension", "Hipertensión arterial"],
+      ["stop_bang_bmi_over_35", "IMC mayor de 35"],
+      ["stop_bang_age_over_50", "Edad mayor de 50 años"],
+      ["stop_bang_neck_circumference", "Circunferencia del cuello"],
+      ["stop_bang_male", "Sexo masculino"],
+    ],
+  },
+  {
+    section: "medical_record_neuro_clinical_exam",
+    title: "NEUROLÓGICO - TRASTORNO DEL SUEÑO",
+    fields: [
+      ["sleep_disorder_snoring", "Ronquido"],
+      ["sleep_disorder_smoking", "Tabaquismo"],
+      ["sleep_disorder_hta", "HTA"],
+      ["sleep_disorder_obesity", "Obesidad tipo II o más"],
+      ["sleep_disorder_short_neck", "Cuello corto"],
+      ["sleep_disorder_mallampati_3_4", "Mallampati (3 o 4)"],
+      ["sleep_disorder_stop_bang", "STOP-BANG positivo"],
+    ],
+  },
+  {
+    section: "medical_record_ophthalmology",
+    title: "OFTALMOLOGÍA - ANAMNESIS VISUAL",
+    fields: [
+      [
+        "consulted_ophthalmologist",
+        "Consulta oftalmológica en los últimos 2 años",
+      ],
+      ["vision_disease", "Enfermedad de la vista"],
+      ["vision_treatment", "Tratamiento de la vista"],
+      ["vision_surgery", "Cirugía de la vista"],
+      ["vision_surgery_details", "Detalle y fecha de cirugía"],
+      ["glasses_or_contacts", "Anteojos o lentes de contacto"],
+      ["medications", "Medicamentos"],
+      ["medications_details", "Detalle de medicamentos"],
+      ["monocular_vision", "Visión monocular"],
+      ["anisometropia", "Anisometropía"],
+      ["night_vision", "Visión nocturna"],
+      ["twilight_vision", "Visión crepuscular"],
+      ["glare_readaptation", "Deslumbramiento (readaptación)"],
+      [
+        "ocular_movement_extrinsic",
+        "Movimientos oculares extrínsecos (estrabismo)",
+      ],
+      [
+        "ocular_movement_intrinsic",
+        "Movimientos oculares intrínsecos (anisocoria)",
+      ],
+    ],
+  },
+  {
+    section: "medical_record_ophthalmology",
+    title: "OFTALMOLOGÍA - EXAMEN",
+    fields: [
+      ["visual_field_od", "Campo visual OD"],
+      ["visual_field_oi", "Campo visual OI"],
+      ["bmc_conjunctivas", "BMC - Conjuntivas"],
+      ["bmc_cornea", "BMC - Córneas"],
+      ["bmc_lens", "BMC - Cristalino"],
+      ["ocular_tension_od", "Tensión ocular OD"],
+      ["ocular_tension_oi", "Tensión ocular OI"],
+      ["fundus_od", "Fondo de ojo OD"],
+      ["fundus_oi", "Fondo de ojo OI"],
+      ["fundus_dilation", "Dilatación"],
+      ["ishihara", "Ishi Hara"],
+      ["trcs", "T.R.C.S."],
+      ["farnsworth", "Farnsworth"],
+      ["head_neck", "Cabeza y cuello"],
+    ],
+  },
+  {
+    section: "medical_record_recomendations",
+    title: "RECOMENDACIONES - COMPLEMENTO",
+    fields: [["retenido", "Retenido"]],
+  },
+  {
+    section: "medical_record_studies",
+    title: "ESTUDIOS REALIZADOS - COMPLEMENTO",
+    fields: [["examen_fisico", "Examen físico"]],
+  },
+];
+
 /* ================================================================
    COMPONENT
    ================================================================ */
@@ -124,13 +265,9 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
     medical_record_studies,
     medical_record_derivations,
     medical_record_cuestionario_riesgos,
-    medical_record_ddjj,
-    medical_record_neuro_medical_exam,
-    medical_record_medical_responsable_signatures,
     medical_record_patient_signatures,
     medical_record_laboral_signatures,
     medical_record_signatures,
-    medical_record_oftalmologico_medical_exam,
   } = medicalRecord;
 
   const d = medical_record_data;
@@ -161,14 +298,10 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
   const deriv = medical_record_derivations;
   const cuest = medical_record_cuestionario_riesgos;
   const companyName = d?.company_name?.trim() || patientCompanyName?.trim() || cuest?.company_name?.trim() || "Particular";
-  const ddjj = medical_record_ddjj;
-  const respon = medical_record_medical_responsable_signatures;
   const patient = medical_record_patient_signatures;
   const laboralSig = medical_record_laboral_signatures;
   const signatures = medical_record_signatures;
 
-  const neuroMed = medical_record_neuro_medical_exam;
-  const oftalmoMed = medical_record_oftalmologico_medical_exam;
 
   const formatDate = (date: string | null | undefined) =>
     date ? new Date(date).toLocaleDateString() : "";
@@ -610,6 +743,14 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
                   </Text>
                 </View>
               ))}
+              {surg?.others === true && surg.others_description?.trim() && (
+                <View style={{borderTopWidth: 1, borderTopColor: "#000", marginTop: 2, paddingTop: 3}}>
+                  <Text style={{fontSize: 7}}>
+                    <Text style={{fontWeight: "bold"}}>Otras cirugías: </Text>
+                    {surg.others_description}
+                  </Text>
+                </View>
+              )}
             </View>
           </View>
         </View>
@@ -1227,329 +1368,78 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
         </View>
       </Page>
 
-      {/* ========== PAGE 7: CUESTIONARIO DE RIESGO ========== */}
+      {/* Firmas de la historia clínica (sin cuestionario de riesgo). */}
       <Page size="A4" style={styles.page}>
         <Header />
 
-        {/* CUESTIONARIO PARA TRABAJADORES */}
-        <View style={styles.tableContainer}>
-          <SectionHeader title="CUESTIONARIO PARA TRABAJADORES EN ALTURA, CONDUCCIÓN DE VEHÍCULOS Y TRABAJOS EN ESPACIOS CONFINADOS" />
-          <View style={[styles.row, styles.noBorderBottom]}>
-            <View style={[styles.cell, styles.flex1]}>
-              <Text style={styles.label}>
-                Empresa: <Text style={{fontWeight: "normal"}}>{cuest?.company_name?.trim() || companyName}</Text>
-              </Text>
-            </View>
-          </View>
-          <View style={[styles.row, styles.noBorderBottom]}>
-            <View style={[styles.cell, styles.flex1]}>
-              <Text style={styles.label}>
-                Apellido y nombre:{" "}
-                <Text style={{fontWeight: "normal"}}>{cuest?.complete_name}</Text>
-              </Text>
-            </View>
-            <View style={[styles.cell, styles.flex1]}>
-              <Text style={styles.label}>
-                DNI: <Text style={{fontWeight: "normal"}}>{cuest?.dni}</Text>
-              </Text>
-            </View>
-            <View style={[styles.cell, styles.flex1]}>
-              <Text style={styles.label}>
-                Edad: <Text style={{fontWeight: "normal"}}>{cuest?.age ?? d?.age}</Text>
-              </Text>
-            </View>
-            <View style={[styles.cell, styles.flex1, styles.lastCell]}>
-              <Text style={styles.label}>
-                Peso: <Text style={{fontWeight: "normal"}}>{cuest?.weight}</Text>
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* DECLARACIÓN JURADA */}
-        <View style={styles.tableContainer}>
-          <SectionHeader title="DECLARACIÓN JURADA PARA COMPLETAR POR EL TRABAJADOR" />
-          <View style={{padding: 3}}>
-            <Text style={{fontSize: 7, fontStyle: "italic", marginBottom: 3}}>
-              Tiene o tuvo en el último año
-            </Text>
-            <View style={{flexDirection: "row"}}>
-              <View style={{width: "50%"}}>
-                <SiNoHeaders />
-                <SiNoItem
-                  label="¿Mareos, vértigos o desmayos?"
-                  value={ddjj?.last_year_mareos_vertigo_desmayos}
-                />
-                <SiNoItem label="¿Pico de presión arterial?" value={ddjj?.pico_presion_arterial} />
-                <SiNoItem label="¿Golpe severo en el cráneo?" value={ddjj?.golpe_severo_craneo} />
-                <SiNoItem
-                  label="¿Trastornos depresivos o fobias?"
-                  value={ddjj?.trastornos_depresivos_fobias}
-                />
-                <SiNoItem
-                  label="¿Inseguridad trabajos en altura / espacios confinados?"
-                  value={ddjj?.inseguridad_trabajos_altura}
-                />
-              </View>
-              <View style={{width: "50%", paddingLeft: 10}}>
-                <SiNoHeaders />
-                <SiNoItem
-                  label="¿Epilepsias y/o convulsiones?"
-                  value={ddjj?.epilepsias_convulsiones}
-                />
-                <SiNoItem
-                  label="¿Medicación neurológica / somnolencia?"
-                  value={ddjj?.medicacion_neurologica}
-                />
-                <SiNoItem label="¿Hipoglucemia?" value={ddjj?.hipoglucemia} />
-                <SiNoItem label="¿Caídas desde altura?" value={ddjj?.caidas} />
-                <SiNoItem
-                  label="¿Inseguridad conducción de vehículos?"
-                  value={ddjj?.inseguridad_conduccion}
-                />
-              </View>
-            </View>
-          </View>
-          <View style={styles.obsRow}>
-            <Text style={styles.label}>
-              Observaciones: <Text style={{fontWeight: "normal"}}>{ddjj?.observations}</Text>
-            </Text>
-          </View>
-        </View>
-
-        {/* EXAMEN NEUROLÓGICO */}
-        <View style={styles.tableContainer}>
-          <SectionHeader title="PARA COMPLETAR POR EL MÉDICO - EXAMEN NEUROLÓGICO" />
-          <View style={{padding: 3}}>
-            <Text style={{fontSize: 7, fontStyle: "italic", marginBottom: 3}}>
-              Tiene o tuvo en el último año
-            </Text>
-            {/* Header */}
-            <View style={{flexDirection: "row", marginBottom: 3}}>
-              <View style={{flex: 1}} />
-              <Text style={{fontSize: 7, fontWeight: "bold", width: 35, textAlign: "center"}}>
-                Normal
-              </Text>
-              <Text style={{fontSize: 7, fontWeight: "bold", width: 35, textAlign: "center"}}>
-                Anormal
-              </Text>
-              <Text style={{fontSize: 7, fontWeight: "bold", width: 120, textAlign: "center"}}>
-                Describir
-              </Text>
-            </View>
-            {[
-              {
-                l: "Prueba dedo - nariz",
-                normal: neuroMed?.test_dedo_nariz_normal,
-                anormal: neuroMed?.test_dedo_nariz_anormal,
-                desc: neuroMed?.test_dedo_nariz_description,
-              },
-              {
-                l: "Prueba de Romberg",
-                normal: neuroMed?.test_romberg_normal,
-                anormal: neuroMed?.test_romberg_anormal,
-                desc: neuroMed?.test_romberg_description,
-              },
-              {
-                l: "Prueba de seguimiento ocular",
-                normal: neuroMed?.test_seguimiento_ocular_normal,
-                anormal: neuroMed?.test_seguimiento_ocular_anormal,
-                desc: neuroMed?.test_seguimiento_ocular_description,
-              },
-              {
-                l: "Examen de miembro Sup. (Sensitivo y Motor)",
-                normal: neuroMed?.exam_miembro_sup_normal,
-                anormal: neuroMed?.exam_miembro_sup_anormal,
-                desc: neuroMed?.exam_miembro_sup_description,
-              },
-              {
-                l: "Examen de miembro Inf. (Sensitivo y Motor)",
-                normal: neuroMed?.exam_miembro_inf_normal,
-                anormal: neuroMed?.exam_miembro_inf_anormal,
-                desc: neuroMed?.exam_miembro_inf_description,
-              },
-            ].map((item, i) => (
-              <View key={i} style={{flexDirection: "row", alignItems: "center", marginBottom: 2}}>
-                <Text style={[styles.label, {flex: 1}]}>{item.l}</Text>
-                <View style={{width: 35, alignItems: "center"}}>
-                  <Checkbox value={item.normal} />
+        {additionalSections.map(({ section, title, fields }) => {
+          const values = medicalRecord[section] as
+            Record<string, unknown> | null | undefined;
+          const populated = fields.filter(
+            ([key]) =>
+              values?.[key] !== null &&
+              values?.[key] !== undefined &&
+              values?.[key] !== "",
+          );
+          if (!populated.length) return null;
+          return (
+            <View key={title} style={styles.tableContainer} wrap={false}>
+              <SectionHeader title={title} />
+              {populated.map(([key, label]) => (
+                <View key={key} style={{ padding: 3 }} wrap={false}>
+                  <Text style={{ fontSize: 8 }}>
+                    <Text style={{ fontWeight: "bold" }}>{label}: </Text>
+                    {typeof values?.[key] === "boolean"
+                      ? values[key]
+                        ? "Sí"
+                        : "No"
+                      : String(values?.[key])}
+                  </Text>
                 </View>
-                <View style={{width: 35, alignItems: "center"}}>
-                  <Checkbox value={item.anormal} />
-                </View>
-                <Text style={{fontSize: 7, width: 120}}>{item.desc}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* EXAMEN OFTALMOLÓGICO */}
-        <View style={styles.tableContainer}>
-          <SectionHeader title="EXAMEN OFTALMOLÓGICO" />
-          <View style={[styles.cyanHeader, {fontSize: 7}]}>
-            <Text>Agudeza Visual</Text>
-          </View>
-          {/* Table header */}
-          <View style={styles.row}>
-            <Text style={[styles.cell, {width: 100, fontSize: 7, fontWeight: "bold"}]}> </Text>
-            <Text
-              style={[styles.cell, {flex: 1, fontSize: 7, fontWeight: "bold", textAlign: "center"}]}
-            >
-              OI
-            </Text>
-            <Text
-              style={[styles.cell, {flex: 1, fontSize: 7, fontWeight: "bold", textAlign: "center"}]}
-            >
-              OD
-            </Text>
-            <Text
-              style={[
-                styles.cell,
-                styles.lastCell,
-                {flex: 1, fontSize: 7, fontWeight: "bold", textAlign: "center"},
-              ]}
-            >
-              BINOCULAR
-            </Text>
-          </View>
-          {[
-            {
-              l: "A. Visual Cercana",
-              oi: oftalmoMed?.visual_cercana_oi,
-              od: oftalmoMed?.visual_cercana_od,
-              bino: oftalmoMed?.visual_cercana_binocular,
-            },
-            {
-              l: "A. Visual Lejana",
-              oi: oftalmoMed?.visual_lejana_oi,
-              od: oftalmoMed?.visual_lejana_od,
-              bino: oftalmoMed?.visual_lejana_binocular,
-            },
-            {
-              l: "Discriminación de colores",
-              oi: oftalmoMed?.discriminacion_colores_oi,
-              od: oftalmoMed?.discriminacion_colores_od,
-              bino: oftalmoMed?.discriminacion_colores_binocular,
-            },
-            {
-              l: "Campimetría",
-              oi: oftalmoMed?.campimetria_oi,
-              od: oftalmoMed?.campimetria_od,
-              bino: oftalmoMed?.campimetria_binocular,
-            },
-          ].map((item, i, arr) => (
-            <View key={i} style={[styles.row, i === arr.length - 1 ? styles.noBorderBottom : {}]}>
-              <Text style={[styles.cell, {width: 100, fontSize: 7}]}>{item.l}</Text>
-              <Text style={[styles.cell, {flex: 1, fontSize: 7, textAlign: "center"}]}>
-                {item.oi}
-              </Text>
-              <Text style={[styles.cell, {flex: 1, fontSize: 7, textAlign: "center"}]}>
-                {item.od}
-              </Text>
-              <Text
-                style={[styles.cell, styles.lastCell, {flex: 1, fontSize: 7, textAlign: "center"}]}
-              >
-                {item.bino}
-              </Text>
+              ))}
             </View>
-          ))}
-          <View style={styles.obsRow}>
-            <Text style={styles.label}>
-              Dictamen: <Text style={{fontWeight: "normal"}}>{oftalmoMed?.dictamen}</Text>
-            </Text>
-          </View>
-        </View>
-
-        {/* PARA COMPLETAR POR EL MÉDICO */}
-        <View style={styles.tableContainer}>
-          <SectionHeader title="PARA COMPLETAR POR EL MÉDICO" />
-          <View style={{padding: 5}}>
-            <Text style={{fontSize: 8, marginBottom: 5}}>
-              En las Evaluaciones realizadas en este formulario el día de la fecha:
-            </Text>
-            <View style={{flexDirection: "row", alignItems: "center", marginBottom: 3}}>
-              <Checkbox value={cuest?.es_apto} />
-              <Text style={{fontSize: 7, flex: 1, marginLeft: 3, fontWeight: "bold"}}>
-                NO SE EVIDENCIAN LIMITACIONES PARA REALIZAR TRABAJO EN ALTURA, TRABAJO EN ESPACIOS
-                CONFINADOS Y CONDUCCIÓN DE VEHÍCULOS.
-              </Text>
-            </View>
-            <View style={{flexDirection: "row", alignItems: "center", marginBottom: 5}}>
-              <Checkbox value={cuest?.no_es_apto} />
-              <Text style={{fontSize: 7, flex: 1, marginLeft: 3, fontWeight: "bold"}}>
-                SE EVIDENCIAN LIMITACIONES PARA REALIZAR TRABAJO EN ALTURA, TRABAJO EN ESPACIOS
-                CONFINADOS Y CONDUCCIÓN DE VEHÍCULOS.
-              </Text>
-            </View>
-            <View
-              style={{
-                borderWidth: 1,
-                borderColor: "#000",
-                minHeight: 40,
-                padding: 3,
-                marginBottom: 10,
-              }}
-            >
-              <Text style={{fontSize: 7}}>{cuest?.observations}</Text>
-            </View>
-
-            {/* Firmas */}
-            <View style={{flexDirection: "row", marginTop: 15}}>
-              <View
-                style={{
-                  flex: 1,
-                  alignItems: "center",
-                  borderWidth: 1,
-                  borderColor: "#000",
-                  padding: 5,
-                  marginRight: 10,
-                  minHeight: 60,
-                }}
-              >
-                <Image src={respon?.url} />
-                <Text style={{fontSize: 7, fontWeight: "bold", textAlign: "center"}}>
-                  Firma y matrícula del médico responsable
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  alignItems: "center",
-                  borderWidth: 1,
-                  borderColor: "#000",
-                  padding: 5,
-                  minHeight: 60,
-                }}
-              >
-                <Image src={patient?.url} />
-                <Text style={{fontSize: 7, fontWeight: "bold", textAlign: "center"}}>
-                  Firma y aclaración del trabajador
-                </Text>
-              </View>
-            </View>
-          </View>
-        </View>
+          );
+        })}
 
         {/* FIRMA DIGITAL Y MATRÍCULA */}
-        <View style={[styles.tableContainer, {marginTop: 10}]}>
+        <View style={[styles.tableContainer, { marginTop: 10 }]} wrap={false}>
           <SectionHeader title="FIRMA DIGITAL Y MATRÍCULA" />
           <View
-            style={{flexDirection: "row", marginTop: 15, paddingHorizontal: 10, paddingBottom: 15}}
+            style={{
+              flexDirection: "row",
+              marginTop: 15,
+              paddingHorizontal: 10,
+              paddingBottom: 15,
+            }}
           >
             {/* Médico Evaluador */}
-            <View style={{flex: 1, paddingRight: 10}}>
-              <Text style={{fontSize: 9, fontWeight: "bold"}}>
-                Médico Evaluador <Text style={{fontWeight: "normal"}}>Firma y Matrícula</Text>
+            <View style={{ flex: 1, paddingRight: 10 }}>
+              <Text style={{ fontSize: 9, fontWeight: "bold" }}>
+                Médico Evaluador{" "}
+                <Text style={{ fontWeight: "normal" }}>Firma y Matrícula</Text>
               </Text>
-              {(medicalRecord as any).medical_record_evaluator_signatures?.url ||
+              {(medicalRecord as any).medical_record_evaluator_signatures
+                ?.url ||
               medicalRecord.medical_record_signatures?.url ||
               medicalRecord.firma_medico_evaluador ? (
                 <Image
-                  src={medicalRecord.medical_record_signatures?.url}
-                  style={{width: 150, height: 50, marginTop: 5}}
+                  src={
+                    (medicalRecord as any).medical_record_evaluator_signatures
+                      ?.url ||
+                    medicalRecord.medical_record_signatures?.url ||
+                    medicalRecord.firma_medico_evaluador
+                  }
+                  style={{ width: 150, height: 50, marginTop: 5 }}
                 />
               ) : (
-                <Text style={{fontSize: 9, fontWeight: "bold", marginTop: 10, marginBottom: 10}}>
+                <Text
+                  style={{
+                    fontSize: 9,
+                    fontWeight: "bold",
+                    marginTop: 10,
+                    marginBottom: 10,
+                  }}
+                >
                   Firma __________________
                 </Text>
               )}
@@ -1564,22 +1454,38 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
                   width: "100%",
                 }}
               >
-                <Text style={{fontSize: 8}}>
-                  Fecha: {formatDate(medicalRecord.medical_record_signatures?.created_at)}
+                <Text style={{ fontSize: 8 }}>
+                  Fecha:{" "}
+                  {formatDate(
+                    medicalRecord.medical_record_signatures?.created_at,
+                  )}
                 </Text>
               </View>
             </View>
 
             {/* Médico Laboral */}
-            <View style={{flex: 1, paddingLeft: 10}}>
-              <Text style={{fontSize: 9, fontWeight: "bold"}}>
-                Médico Laboral <Text style={{fontWeight: "normal"}}>Firma y Matrícula</Text>
+            <View style={{ flex: 1, paddingLeft: 10 }}>
+              <Text style={{ fontSize: 9, fontWeight: "bold" }}>
+                Médico Laboral{" "}
+                <Text style={{ fontWeight: "normal" }}>Firma y Matrícula</Text>
               </Text>
-              {medicalRecord.medical_record_laboral_signatures?.url}
-              <Image
-                src={medicalRecord.medical_record_laboral_signatures?.url}
-                style={{width: 150, height: 50, marginTop: 5}}
-              />
+              {medicalRecord.medical_record_laboral_signatures?.url ? (
+                <Image
+                  src={medicalRecord.medical_record_laboral_signatures.url}
+                  style={{ width: 150, height: 50, marginTop: 5 }}
+                />
+              ) : (
+                <Text
+                  style={{
+                    fontSize: 9,
+                    fontWeight: "bold",
+                    marginTop: 10,
+                    marginBottom: 10,
+                  }}
+                >
+                  Firma __________________
+                </Text>
+              )}
               <View
                 style={{
                   flexDirection: "row",
@@ -1591,15 +1497,37 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
                   width: "100%",
                 }}
               >
-                <Text style={{fontSize: 8}}>
-                  Fecha: {formatDate(medicalRecord.medical_record_laboral_signatures?.created_at)}
+                <Text style={{ fontSize: 8 }}>
+                  Fecha:{" "}
+                  {formatDate(
+                    medicalRecord.medical_record_laboral_signatures?.created_at,
+                  )}
                 </Text>
               </View>
             </View>
             {/* Firma del trabajador */}
-            <View style={{flex: 1, paddingLeft: 10, marginTop: 10}}>
-              <Text style={{fontSize: 9, fontWeight: "bold"}}>Trabajador <Text style={{fontWeight: "normal"}}>Firma y aclaración</Text></Text>
-              {patient?.url ? <Image src={patient.url} style={{width: 150, height: 50, marginTop: 5}} /> : <Text style={{fontSize: 9, fontWeight: "bold", marginTop: 10, marginBottom: 10}}>Firma __________________</Text>}
+            <View style={{ flex: 1, paddingLeft: 10, marginTop: 10 }}>
+              <Text style={{ fontSize: 9, fontWeight: "bold" }}>
+                Trabajador{" "}
+                <Text style={{ fontWeight: "normal" }}>Firma y aclaración</Text>
+              </Text>
+              {patient?.url ? (
+                <Image
+                  src={patient.url}
+                  style={{ width: 150, height: 50, marginTop: 5 }}
+                />
+              ) : (
+                <Text
+                  style={{
+                    fontSize: 9,
+                    fontWeight: "bold",
+                    marginTop: 10,
+                    marginBottom: 10,
+                  }}
+                >
+                  Firma __________________
+                </Text>
+              )}
             </View>
           </View>
         </View>
