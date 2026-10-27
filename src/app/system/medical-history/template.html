@@ -59,10 +59,6 @@
     <div class="grid">
       <div class="field"><div class="label">Empresa</div><div class="value">{{ record.medical_record_data.company_name or "Particular" }}</div></div>
       <div></div>
-      <div class="field"><div class="label">Estudios</div><div class="value">{{ record.medical_record_data.education_level or "—" }}</div></div>
-      <div></div>
-      <div class="field"><div class="label">Sector</div><div class="value">{{ record.medical_record_data.sector or "—" }}</div></div>
-      <div></div>
       <div class="field"><div class="label">Nombre completo</div><div class="value">{{ record.medical_record_data.complete_name or "—" }}</div></div>
       <div class="field"><div class="label">DNI</div><div class="value">{{ record.medical_record_data.dni or "—" }}</div></div>
 
@@ -73,7 +69,10 @@
       <div class="field"><div class="label">Email / Teléfono</div><div class="value">{{ record.medical_record_data.email or "—" }} / {{ record.medical_record_data.phone or "—" }}</div></div>
 
       <div class="field"><div class="label">Estado civil</div><div class="value">{{ record.medical_record_data.civil_status or "—" }}</div></div>
-      <div class="field"><div class="label">Tareas</div><div class="value">{{ record.medical_record_data.tasks or "—" }}</div></div>
+      <div></div>
+      <div class="field"><div class="label">Estudios</div><div class="value">{{ record.medical_record_data.education_level or "—" }}</div></div>
+      <div></div>
+      <div class="field"><div class="label">Sector</div><div class="value">{{ record.medical_record_data.sector or "—" }}</div></div>
     </div>
   </div>
 </body>

@@ -14,9 +14,15 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error: unknown) => {
     if (error && typeof error === "object" && "response" in error) {
-      const axiosError = error as {response?: {status?: number}};
+      const axiosError = error as {response?: {status?: number}; config?: {url?: string; method?: string}};
 
       if (axiosError.response?.status === 401) {
+        // Keep an unsaved medical form mounted so the user can sign in in another tab and retry.
+        const isMedicalSave = axiosError.config?.url?.startsWith("/medical-records") &&
+          ["post", "put"].includes(axiosError.config?.method?.toLowerCase() ?? "");
+        if (typeof window !== "undefined" && window.location.pathname.startsWith("/system/medical-history/") && isMedicalSave) {
+          return Promise.reject(error);
+        }
         // Token inválido o expirado
         localStorage.removeItem("access_token");
         localStorage.removeItem("user");

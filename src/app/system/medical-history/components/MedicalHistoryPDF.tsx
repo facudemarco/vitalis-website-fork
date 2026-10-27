@@ -257,13 +257,8 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
               <Text style={styles.label}>Hijos: <Text style={{fontWeight: "normal"}}>{d?.sons}</Text></Text>
             </View>
           </View>
-          <View style={[styles.row, {minHeight: 22}]}>
-            <View style={[styles.cell, styles.w100, styles.lastCell, {justifyContent: "center"}]}>
-              <Text style={styles.label}>Tareas a realizar / realiza: <Text style={{fontWeight: "normal"}}>{d?.tasks}</Text></Text>
-            </View>
-          </View>
-          <View style={[styles.row, styles.noBorderBottom, {minHeight: 24}]}>
-            <View style={[styles.cell, {width: "61%", flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 4}]}>
+          <View style={[styles.row, {minHeight: 24}]}>
+            <View style={[styles.cell, styles.w100, styles.lastCell, {flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 4}]}>
               <Text style={styles.label}>Estudios:</Text>
               {(["Primarios", "Secundarios", "Terciarios"] as const).map((level) => (
                 <View key={level} style={{flexDirection: "row", alignItems: "center", gap: 3}}>
@@ -272,7 +267,9 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
                 </View>
               ))}
             </View>
-            <View style={[styles.cell, styles.flex1, styles.lastCell, {justifyContent: "center"}]}>
+          </View>
+          <View style={[styles.row, styles.noBorderBottom, {minHeight: 22}]}>
+            <View style={[styles.cell, styles.w100, styles.lastCell, {justifyContent: "center"}]}>
               <Text style={styles.label}>Sector: <Text style={{fontWeight: "normal"}}>{d?.sector || "—"}</Text></Text>
             </View>
           </View>
