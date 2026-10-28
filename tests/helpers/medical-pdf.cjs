@@ -31,6 +31,7 @@ async function loadPDF() {
     {
       "@react-pdf/renderer": renderer,
       "@/lib/medicalRecordDefaults": defaults,
+      "@/lib/clinicalMeasurements": compile("src/lib/clinicalMeasurements.ts"),
     },
   );
   const logo =

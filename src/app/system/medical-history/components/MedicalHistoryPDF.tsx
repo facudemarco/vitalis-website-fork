@@ -2,6 +2,7 @@ import React from "react";
 import {Page, Text, View, Document, StyleSheet, Image} from "@react-pdf/renderer";
 
 import {MedicalRecord} from "@/types";
+import {formatClinicalMeasurement} from "@/lib/clinicalMeasurements";
 import {normalizeMedicalRecordDefaults} from "@/lib/medicalRecordDefaults";
 
 const styles = StyleSheet.create({
@@ -223,11 +224,6 @@ const additionalSections: {
     title: "RECOMENDACIONES - COMPLEMENTO",
     fields: [["retenido", "Retenido"]],
   },
-  {
-    section: "medical_record_studies",
-    title: "ESTUDIOS REALIZADOS - COMPLEMENTO",
-    fields: [["examen_fisico", "Examen físico"]],
-  },
 ];
 
 /* ================================================================
@@ -331,8 +327,8 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
         {/* DATOS PERSONALES: formato de ficha impresa */}
         <View style={styles.tableContainer} wrap={false}>
           <View style={{flexDirection: "row"}}>
-            <View style={{width: "80%"}}>
-              <View style={[styles.row, {minHeight: 23}]}>
+            <View style={{width: "60%"}}>
+              <View style={[styles.row, {minHeight: 23, flexGrow: 1}]}>
                 <View style={[styles.cell, {width: 90, backgroundColor: "#93C47D", justifyContent: "center"}]}>
                   <Text style={{fontSize: 11, fontWeight: "bold", color: "#2E5887"}}>EMPRESA</Text>
                 </View>
@@ -340,7 +336,7 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
                   <Text style={{fontSize: 8}}>{companyName}</Text>
                 </View>
               </View>
-              <View style={[styles.row, {minHeight: 22}]}>
+              <View style={[styles.row, {minHeight: 22, flexGrow: 1}]}>
                 <View style={[styles.cell, styles.flex1, {backgroundColor: "#93C47D", justifyContent: "center"}]}>
                   <Text style={{fontSize: 10, fontWeight: "bold", color: "#2E5887"}}>DATOS PERSONALES</Text>
                 </View>
@@ -348,12 +344,12 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
                   <Text style={styles.label}>Fecha: <Text style={{fontWeight: "normal"}}>{new Date().toLocaleDateString("es-AR")}</Text></Text>
                 </View>
               </View>
-              <View style={[styles.row, {minHeight: 24}]}>
+              <View style={[styles.row, {minHeight: 24, flexGrow: 1}]}>
                 <View style={[styles.cell, styles.w100, styles.lastCell, {justifyContent: "center"}]}>
                   <Text style={styles.label}>Apellido y nombres: <Text style={{fontWeight: "normal"}}>{d?.complete_name}</Text></Text>
                 </View>
               </View>
-              <View style={[styles.row, {minHeight: 23}]}>
+              <View style={[styles.row, {minHeight: 23, flexGrow: 1}]}>
                 <View style={[styles.cell, styles.flex1, {justifyContent: "center"}]}>
                   <Text style={styles.label}>Fecha de Nac.: <Text style={{fontWeight: "normal"}}>{d?.date_of_birthday}</Text></Text>
                 </View>
@@ -361,7 +357,7 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
                   <Text style={styles.label}>Nacionalidad: <Text style={{fontWeight: "normal"}}>{d?.nacionality}</Text></Text>
                 </View>
               </View>
-              <View style={[styles.row, styles.noBorderBottom, {minHeight: 23}]}>
+              <View style={[styles.row, styles.noBorderBottom, {minHeight: 23, flexGrow: 1}]}>
                 <View style={[styles.cell, styles.flex1, {justifyContent: "center"}]}>
                   <Text style={styles.label}>Estado Civil: <Text style={{fontWeight: "normal"}}>{d?.civil_status}</Text></Text>
                 </View>
@@ -373,9 +369,9 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
                 </View>
               </View>
             </View>
-            <View style={{width: "20%", borderLeftWidth: 1, borderLeftColor: "#000", padding: 5, justifyContent: "center", alignItems: "center"}}>
+            <View style={{width: "40%", borderLeftWidth: 1, borderLeftColor: "#000", padding: 5, justifyContent: "center", alignItems: "center", overflow: "hidden"}}>
               {img?.url
-                ? <Image src={img.url} style={{width: 90, height: 105, objectFit: "contain"}} />
+                ? <Image src={img.url} style={{width: "100%", height: 125, objectFit: "contain", objectPosition: "center"}} />
                 : <Text style={{fontSize: 10, color: "#555"}}>FOTO</Text>}
             </View>
           </View>
@@ -781,32 +777,32 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
           <View style={[styles.row, styles.noBorderBottom]}>
             <View style={[styles.cell, styles.flex1]}>
               <Text style={styles.label}>
-                Talla: <Text style={{fontWeight: "normal"}}>{clin?.talla}</Text>
+                Talla: <Text style={{fontWeight: "normal"}}>{formatClinicalMeasurement("talla", clin?.talla)}</Text>
               </Text>
             </View>
             <View style={[styles.cell, styles.flex1]}>
               <Text style={styles.label}>
-                Peso: <Text style={{fontWeight: "normal"}}>{clin?.peso}</Text>
+                Peso: <Text style={{fontWeight: "normal"}}>{formatClinicalMeasurement("peso", clin?.peso)}</Text>
               </Text>
             </View>
             <View style={[styles.cell, styles.flex1]}>
               <Text style={styles.label}>
-                Saturación: <Text style={{fontWeight: "normal"}}>{clin?.saturacion}</Text>
+                Saturación: <Text style={{fontWeight: "normal"}}>{formatClinicalMeasurement("saturacion", clin?.saturacion)}</Text>
               </Text>
             </View>
             <View style={[styles.cell, styles.flex1]}>
               <Text style={styles.label}>
-                IMC: <Text style={{fontWeight: "normal"}}>{clin?.imc}</Text>
+                IMC: <Text style={{fontWeight: "normal"}}>{formatClinicalMeasurement("imc", clin?.imc)}</Text>
               </Text>
             </View>
             <View style={[styles.cell, styles.flex1]}>
               <Text style={styles.label}>
-                TA mín: <Text style={{fontWeight: "normal"}}>{clin?.ta_min}</Text>
+                TA mín: <Text style={{fontWeight: "normal"}}>{formatClinicalMeasurement("ta_min", clin?.ta_min)}</Text>
               </Text>
             </View>
             <View style={[styles.cell, styles.flex1, styles.lastCell]}>
               <Text style={styles.label}>
-                TA máx: <Text style={{fontWeight: "normal"}}>{clin?.ta_max}</Text>
+                TA máx: <Text style={{fontWeight: "normal"}}>{formatClinicalMeasurement("ta_max", clin?.ta_max)}</Text>
               </Text>
             </View>
           </View>
@@ -1348,6 +1344,7 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
             </View>
             <View style={{width: "33%", paddingLeft: 10}}>
               {[
+                {l: "Examen físico", v: studies?.examen_fisico},
                 {l: "Electroencefalograma", v: studies?.electroencefalograma},
                 {l: "Laboratorio", v: studies?.laboratorio},
                 {l: "Drogas de abuso", v: studies?.drogas_abuso},

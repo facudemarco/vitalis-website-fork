@@ -42,3 +42,10 @@ Revisar `hc-surgery.pdf`, `hc-long.pdf` y `hc-coverage.pdf`. Este último incluy
 ## Alcance
 
 La suite separa las pruebas del navegador con API simulada de las pruebas HTTP reales del backend con SQLite. No es una prueba contra una instalación desplegada ni comprueba las migraciones o tipos reales de MySQL; para eso existe el chequeo de esquema del backend. La auditoría detecta que un campo afecta la impresión, pero no demuestra por sí sola que su rótulo o posición sean correctos; tampoco descubre nombres construidos dinámicamente que no aparezcan como literales. Revisar visualmente cuando se cambia el PDF. Firmas dibujadas, carga real de archivos y todos los permisos de usuario requieren pruebas específicas adicionales.
+
+
+## Medidas clínicas y fotos
+
+Las medidas aceptan el número solo o con su unidad: talla en cm, peso en kg, saturación en %, TA mínima/máxima en mmHg. Se admiten punto o coma decimal y unidades sin distinguir mayúsculas. El IMC acepta un entero o hasta dos decimales. Las columnas numéricas existentes conservan los valores; la unidad es fija por campo y se agrega al imprimir. No se requiere migración. No se convierten automáticamente otras unidades como metros o libras.
+
+Las pruebas cubren unidades equivocadas, entradas inválidas, valores vacíos, datos numéricos anteriores y guardado/relectura. La casilla de examen físico se verifica dentro de estudios realizados. Al generar PDFs de QA se agregan hc-photo-landscape.pdf, hc-photo-portrait.pdf, hc-photo-square.pdf y hc-photo-panorama.pdf: imágenes ficticias de cuatro colores para detectar recortes o deformación. El encuadre conserva la imagen completa con objectFit contain; los márgenes dependen de la proporción de la foto.
