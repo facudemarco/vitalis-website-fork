@@ -1,5 +1,25 @@
 import { test, expect, Page } from "@playwright/test";
 
+test("clinical inputs accept units, reject invalid values and reload canonical measurements", async ({page}) => {
+  const state=await setup(page);
+  await page.getByRole('button',{name:'Examen Clínico',exact:true}).click();
+  await page.getByRole('textbox',{name:'Peso',exact:true}).fill('80cm');
+  await page.getByRole('button',{name:'Guardar',exact:true}).first().click();
+  await expect(page.getByText(/Peso: ingresá un número en kg/).first()).toBeVisible();
+  expect(state.writes).toHaveLength(0);
+  for(const [label,value] of [['Talla','175cm'],['Peso','80kg'],['Saturación','99%'],['IMC','20,15'],['TA: mínima','80mmhg'],['TA: máxima','120mmHg']]) {
+    await page.getByRole('textbox',{name:label,exact:true}).fill(value);
+  }
+  await page.getByRole('button',{name:'Guardar',exact:true}).first().click();
+  await expect.poll(()=>state.writes.length).toBe(1);
+  expect(state.saved().medical_record_clinical_exam).toMatchObject({talla:175,peso:80,saturacion:99,imc:20.15,ta_min:80,ta_max:120});
+  await page.reload();
+  await expect(page.getByPlaceholder('Nombre completo')).toHaveValue('Paciente ficticio');
+  await page.getByRole('button',{name:'Examen Clínico',exact:true}).click();
+  await expect(page.getByRole('textbox',{name:'IMC',exact:true})).toHaveValue('20.15');
+  await expect(page.getByRole('textbox',{name:'Talla',exact:true})).toHaveValue('175');
+});
+
 const patient = "hc-test-patient";
 async function setup(page: Page, failure = 0) {
   let saved: Record<string, any> = {

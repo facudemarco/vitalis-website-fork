@@ -7,7 +7,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "next lint",
-    "test:hc:unit": "node --test tests/medical-record-defaults.test.cjs tests/medical-record-errors.test.cjs tests/medical-history-print.test.cjs",
+    "test:hc:unit": "node --test tests/medical-record-defaults.test.cjs tests/medical-record-errors.test.cjs tests/medical-history-print.test.cjs tests/clinical-measurements.test.cjs",
     "test:hc:web": "playwright test",
     "test:hc:audit": "node scripts/audit-hc-print.cjs",
     "test:hc": "npm run test:hc:unit && npm run test:hc:web && npm run test:hc:audit",

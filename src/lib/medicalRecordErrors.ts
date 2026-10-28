@@ -4,6 +4,12 @@ const medicalRecordFieldLabels: Record<string, string> = {
   sector: "Sector",
   phone: "Teléfono",
   age: "Edad",
+  talla: "Talla (cm)",
+  peso: "Peso (kg)",
+  saturacion: "Saturación (%)",
+  imc: "IMC",
+  ta_min: "TA mínima (mmHg)",
+  ta_max: "TA máxima (mmHg)",
 };
 
 const getMedicalRecordFieldLabel = (field: unknown) => {
