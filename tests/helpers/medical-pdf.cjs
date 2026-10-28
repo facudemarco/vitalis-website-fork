@@ -32,6 +32,7 @@ async function loadPDF() {
       "@react-pdf/renderer": renderer,
       "@/lib/medicalRecordDefaults": defaults,
       "@/lib/clinicalMeasurements": compile("src/lib/clinicalMeasurements.ts"),
+      "@/lib/medicalAge": compile("src/lib/medicalAge.ts"),
     },
   );
   const logo =

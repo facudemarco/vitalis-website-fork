@@ -2,6 +2,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {useForm} from "react-hook-form";
 
 import {MedicalRecordData} from "@/types";
+import {parseMedicalAge, formatMedicalAge} from "@/lib/medicalAge";
 
 import {SectionHandler} from "../../useFormRegistry";
 
@@ -16,14 +17,19 @@ interface Props {
 export const PatientDataSection = React.memo(
   ({defaultValues, defaultCompanyName, registerSection, currentImageUrl, onImageChange}: Props) => {
     const form = useForm<MedicalRecordData>({
-      defaultValues: {...defaultValues, company_name: defaultValues?.company_name || defaultCompanyName || "Particular"} as MedicalRecordData,
+      defaultValues: {...defaultValues, age: formatMedicalAge(defaultValues?.age), company_name: defaultValues?.company_name || defaultCompanyName || "Particular"} as MedicalRecordData,
       mode: "onBlur",
     });
 
     const {getValues, trigger, register} = form;
     const ageInput = register("age", {
-      validate: (value) => !value || /^(?:[1-9][0-9]?|1[0-4][0-9]|150)$/.test(value) || "Ingresá una edad entre 1 y 150, sin decimales.",
-      setValueAs: (value) => value === "" ? null : value,
+      validate: (value) => {
+        try { parseMedicalAge(value); return true; }
+        catch (error) { return (error as Error).message; }
+      },
+      setValueAs: (value) => {
+        try { return parseMedicalAge(value); } catch { return value; }
+      },
     });
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl ?? null);
@@ -33,7 +39,7 @@ export const PatientDataSection = React.memo(
         getValues: () => getValues(),
         validate: async () => trigger(),
         getErrors: () => [
-          ...(form.getFieldState("age").error ? ["Edad: ingresá un número entre 1 y 150, sin decimales"] : []),
+          ...(form.getFieldState("age").error ? [String(form.getFieldState("age").error?.message)] : []),
           ...(form.getFieldState("sons").error ? ["Cantidad de hijos: ingresá un número entero igual o mayor a cero"] : []),
         ],
       });
@@ -86,21 +92,15 @@ export const PatientDataSection = React.memo(
               <input
                 {...ageInput}
                 id="patient-age"
+                aria-label="Edad"
+                aria-invalid={Boolean(form.formState.errors.age)}
                 className="w-full border border-gray-500 p-2 font-normal"
-                placeholder="Edad (1 a 150)"
+                placeholder="Ej.: 28 años"
                 type="text"
-                inputMode="numeric"
-                maxLength={3}
-                pattern="(?:[1-9][0-9]?|1[0-4][0-9]|150)"
-                onChange={(event) => {
-                  const value = event.target.value;
-                  if (value === "" || /^(?:[1-9][0-9]?|1[0-4][0-9]|150)$/.test(value)) {
-                    void ageInput.onChange(event);
-                  } else {
-                    event.target.value = getValues("age") ?? "";
-                  }
-                }}
+                maxLength={20}
+                aria-describedby="patient-age-error"
               />
+              {form.formState.errors.age?.message && <span id="patient-age-error" className="text-sm text-red-600">{String(form.formState.errors.age.message)}</span>}
             </label>
             <input
               className="w-full border border-gray-500 p-2"
