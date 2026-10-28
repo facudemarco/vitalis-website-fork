@@ -49,3 +49,8 @@ La suite separa las pruebas del navegador con API simulada de las pruebas HTTP r
 Las medidas aceptan el número solo o con su unidad: talla en cm, peso en kg, saturación en %, TA mínima/máxima en mmHg. Se admiten punto o coma decimal y unidades sin distinguir mayúsculas. El IMC acepta un entero o hasta dos decimales. Las columnas numéricas existentes conservan los valores; la unidad es fija por campo y se agrega al imprimir. No se requiere migración. No se convierten automáticamente otras unidades como metros o libras.
 
 Las pruebas cubren unidades equivocadas, entradas inválidas, valores vacíos, datos numéricos anteriores y guardado/relectura. La casilla de examen físico se verifica dentro de estudios realizados. Al generar PDFs de QA se agregan hc-photo-landscape.pdf, hc-photo-portrait.pdf, hc-photo-square.pdf y hc-photo-panorama.pdf: imágenes ficticias de cuatro colores para detectar recortes o deformación. El encuadre conserva la imagen completa con objectFit contain; los márgenes dependen de la proporción de la foto.
+
+
+## Edad con unidad
+
+Edad acepta `28 años`, `1 año` y el número solo, con rango entero de 1 a 150. El formulario y el PDF muestran año/años; la API normaliza a una cadena numérica compatible con VARCHAR(3), sin otra migración. Las pruebas cubren el sufijo, mayúsculas, límites, guardado y reapertura.

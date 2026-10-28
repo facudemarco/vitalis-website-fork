@@ -26,7 +26,7 @@ const getMedicalRecordValidationMessage = (item: {
   const label = getMedicalRecordFieldLabel(path.at(-1));
   const field = String(path.at(-1) ?? "");
 
-  if (field === "age") return "Edad: ingresá un número entre 1 y 150, sin decimales.";
+  if (field === "age") return "Edad: ingresá una edad entre 1 y 150, por ejemplo: 28 años.";
 
   if (item.type === "int_parsing" || item.type === "int_from_float") {
     return field === "sons"

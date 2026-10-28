@@ -120,7 +120,7 @@ test("other surgery, optional education and age survive saving and reopening", a
   await expect(
     page.getByText("Cuestionario para trabajadores", { exact: false }),
   ).toHaveCount(0);
-  await page.getByLabel("Edad", { exact: true }).fill("150");
+  await page.getByLabel("Edad", { exact: true }).fill("28 años");
   await page
     .getByRole("combobox", { name: "Estudios", exact: true })
     .selectOption("");
@@ -139,13 +139,13 @@ test("other surgery, optional education and age survive saving and reopening", a
     .first()
     .click();
   await expect.poll(() => state.writes.length).toBe(1);
-  expect(state.saved().medical_record_data.age).toBe("150");
+  expect(state.saved().medical_record_data.age).toBe("28");
   expect(state.saved().medical_record_data.education_level).toBeNull();
   expect(state.saved().medical_record_surgerys.others_description).toBe(
     "Cesáreas y cirugía ficticia",
   );
   await page.reload();
-  await expect(page.getByLabel("Edad", { exact: true })).toHaveValue("150");
+  await expect(page.getByLabel("Edad", { exact: true })).toHaveValue("28 años");
   await page.getByRole("button", { name: "Ha sido operado/a de:" }).click();
   await expect(page.getByPlaceholder("Describa la cirugía")).toHaveValue(
     "Cesáreas y cirugía ficticia",
@@ -172,11 +172,14 @@ test("failed saves preserve input and stay on the HC", async ({ page }) => {
 test("age rejects out-of-range and nonnumeric input; education fits the viewport", async ({
   page,
 }) => {
-  await setup(page);
+  const state = await setup(page);
   const age = page.getByLabel("Edad", { exact: true });
   for (const invalid of ["0", "151", "-1", "abc", "1.5"]) {
     await age.fill(invalid);
-    await expect(age).toHaveValue("35");
+    await page.getByRole("button", {name:"Guardar", exact:true}).first().click();
+    await expect(page.getByText(/Ingresá una edad entre 1 y 150/).first()).toBeVisible();
+    await expect(age).toHaveValue(invalid);
+    expect(state.writes).toHaveLength(0);
   }
   const studies = page.getByRole("combobox", { name: "Estudios", exact: true });
   const box = await studies.boundingBox();

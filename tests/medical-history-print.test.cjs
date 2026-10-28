@@ -170,3 +170,11 @@ test("the production PDF renderer accepts empty, populated and long surgery reco
     if (output) fs.writeFileSync(path.join(output, `hc-${name}.pdf`), buffer);
   }
 });
+
+test('age in the PDF includes years once, with singular and plural',()=>{
+  for(const [age,expected] of [['28','28 años'],['28 años','28 años'],['1','1 año'],['150 años','150 años']]) {
+    const text=pdf.text(pdf.tree({medical_record_data:{age}}));
+    assert.ok(text.includes(expected));
+    assert.ok(!text.includes('años años'));
+  }
+});

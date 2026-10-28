@@ -2,6 +2,7 @@ import React from "react";
 import {Page, Text, View, Document, StyleSheet, Image} from "@react-pdf/renderer";
 
 import {MedicalRecord} from "@/types";
+import {formatMedicalAge} from "@/lib/medicalAge";
 import {formatClinicalMeasurement} from "@/lib/clinicalMeasurements";
 import {normalizeMedicalRecordDefaults} from "@/lib/medicalRecordDefaults";
 
@@ -365,7 +366,7 @@ export const MedicalHistoryPDF: React.FC<MedicalHistoryPDFProps> = ({medicalReco
                   <Text style={styles.label}>D.N.I.: <Text style={{fontWeight: "normal"}}>{d?.dni}</Text></Text>
                 </View>
                 <View style={[styles.cell, styles.lastCell, {width: 65, justifyContent: "center"}]}>
-                  <Text style={styles.label}>Edad: <Text style={{fontWeight: "normal"}}>{d?.age || "—"}</Text></Text>
+                  <Text style={styles.label}>Edad: <Text style={{fontWeight: "normal"}}>{formatMedicalAge(d?.age) || "—"}</Text></Text>
                 </View>
               </View>
             </View>
