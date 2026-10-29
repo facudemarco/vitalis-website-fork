@@ -54,3 +54,24 @@ Las pruebas cubren unidades equivocadas, entradas inválidas, valores vacíos, d
 ## Edad con unidad
 
 Edad acepta `28 años`, `1 año` y el número solo, con rango entero de 1 a 150. El formulario y el PDF muestran año/años; la API normaliza a una cadena numérica compatible con VARCHAR(3), sin otra migración. Las pruebas cubren el sufijo, mayúsculas, límites, guardado y reapertura.
+
+
+## Sesiones de seis horas y recuperación
+
+- Login, apertura de ficha autorizada y reingreso emiten un token de 360 minutos con una cookie HttpOnly/Secure del mismo plazo. Cada apertura de ficha inicia una ventana nueva de seis horas para el editor. Escribir, guardar borradores o hacer consultas no renueva automáticamente esa ventana.
+- Quince minutos antes del vencimiento aparece un aviso. Si vence, se mantienen el formulario, la foto y las firmas. Se puede reingresar con la misma cuenta desde la propia ficha y volver a usar Guardar. Una cuenta distinta se rechaza antes de cambiar la cookie; el guardado también comprueba el identificador del editor para detectar cambios de cuenta entre pestañas.
+- En una HC abierta, cualquier 401 conserva la pantalla. Fuera de la HC se mantiene la redirección al login. verifyToken exige valid:true en el cuerpo de la respuesta; un HTTP 200 con valid:false ya no se considera una sesión válida.
+- Se genera un borrador después de 600 ms sin cambios, con todos los campos, fechas, foto y firmas pendientes. Se guarda cifrado con AES-GCM y una clave no exportable en IndexedDB, separado por usuario y paciente y con control de revisión para no sobrescribir otra pestaña. No se guardan datos clínicos ni contraseñas en localStorage. Solo se usa allí una marca de cierre de sesión, sin contenido de ficha.
+- El borrador se recupera en ese mismo navegador después de verificar la cuenta y el acceso al paciente. Se ofrece Recuperar/Descartar antes de montar el formulario. No reemplaza silenciosamente la versión del servidor ni se publica como ficha completa: Guardar sigue siendo la acción que escribe en el backend.
+- El borrador vence a las 24 horas de su última copia. Los vencidos se descartan al consultarlos. Guardar correctamente limpia el borrador propio; cerrar sesión borra los borradores y las claves de esa cuenta y avisa a otras pestañas para que no los vuelvan a crear sin reingresar.
+- Un fallo de lectura del servidor muestra Reintentar carga y no habilita una ficha vacía. Los fallos del almacenamiento local se muestran de forma visible y no bloquean Guardar en el servidor. Antes de recargar/cerrar una ficha con cambios se activa el aviso del navegador.
+
+El borrador depende del almacenamiento de ese navegador; no es una copia en otro dispositivo ni un backup de servidor. Una interrupción antes de terminar la última copia puede conservar solo la anterior. Si el navegador rechaza el almacenamiento, hay que mantener la ficha abierta hasta guardarla. Las firmas se conservan como PNG, incluidas las que aún no se habían confirmado con Guardar firma.
+
+### Despliegue manual
+
+Desplegar primero el backend y después el frontend, que requiere los nuevos endpoints POST /medical-session/{patient_id} y POST /medical-session/{patient_id}/reauthenticate. No se requiere SQL nuevo. Las autorizaciones de edición siguen siendo las existentes (administración y profesionales).
+
+Los tokens emitidos previamente mantienen su vencimiento original. Una ficha abierta con la versión nueva y una sesión todavía válida obtiene seis horas; si ya venció, se debe reingresar. El borrador se crea desde esta versión y no puede recuperar datos perdidos anteriormente.
+
+La suite comprueba seis horas mediante reloj virtual del navegador y la duración real del JWT mediante el backend. Prueba recuperación de texto/foto/firma tras cerrar una pestaña, reingreso en la misma pantalla, aislamiento entre cuentas, cifrado y clave no exportable, vencimiento/limpieza de borradores y fallos de lectura/almacenamiento.

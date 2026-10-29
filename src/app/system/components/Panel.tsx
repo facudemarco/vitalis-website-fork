@@ -177,6 +177,7 @@ export default function Panel({children, pageTitle, pageIcon, wide = false}: Das
 
               {/* Botón logout en móvil (icono) */}
               <button
+                aria-label="Cerrar sesión"
                 className="flex cursor-pointer items-center justify-center gap-3 rounded-lg px-4 py-3 text-sm text-white transition-all hover:bg-white/15 md:hidden"
                 onClick={() => void handleLogout()}
               >

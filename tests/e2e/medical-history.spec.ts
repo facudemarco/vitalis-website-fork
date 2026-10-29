@@ -21,7 +21,168 @@ test("clinical inputs accept units, reject invalid values and reload canonical m
 });
 
 const patient = "hc-test-patient";
-async function setup(page: Page, failure = 0) {
+async function protectedDraft(page: Page, userId = "hc-test-admin") {
+  return page.evaluate(async ({userId, patient}) => {
+    if (!(await indexedDB.databases()).some(db => db.name === "vitalis-protected-medical-drafts")) return null;
+    const db = await new Promise<IDBDatabase>((resolve,reject) => {
+      const request=indexedDB.open("vitalis-protected-medical-drafts",1);
+      request.onsuccess=()=>resolve(request.result); request.onerror=()=>reject(request.error);
+    });
+    const read=(request: IDBRequest<any>)=>new Promise<any>((resolve,reject)=>{request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
+    try {
+      const stored=await read(db.transaction("drafts").objectStore("drafts").get(JSON.stringify([userId,patient])));
+      if (!stored) return null;
+      const key=await read(db.transaction("keys").objectStore("keys").get(userId));
+      const bytes=await crypto.subtle.decrypt({name:"AES-GCM",iv:stored.iv,additionalData:new TextEncoder().encode(`v1:${JSON.stringify([userId,patient])}`)},key.key,stored.encrypted);
+      return {...JSON.parse(new TextDecoder().decode(bytes)), revision:stored.revision, keyExtractable:key.key.extractable,
+        ciphertext:new TextDecoder().decode(stored.encrypted)};
+    } finally {db.close();}
+  },{userId,patient});
+}
+
+test("expired sessions reauthenticate in place with the same account and preserve the ficha",async({page})=>{
+  const state=await setup(page);
+  await page.getByLabel("Sector",{exact:true}).fill("CONSERVAR TRAS VENCIMIENTO");
+  state.expire();
+  await page.getByRole("button",{name:"Guardar",exact:true}).first().click();
+  await expect(page.getByRole("region",{name:"Sesión de la ficha"})).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`/medical-history/${patient}$`));
+  await expect(page.getByLabel("Sector",{exact:true})).toHaveValue("CONSERVAR TRAS VENCIMIENTO");
+  expect(state.writes).toHaveLength(0);
+  await page.getByLabel("Correo de tu cuenta").fill("another@example.invalid");
+  await page.getByLabel("Contraseña",{exact:true}).fill("test-only");
+  await page.getByRole("button",{name:"Volver a ingresar sin salir de la ficha"}).click();
+  await expect(page.getByText("Ingresá con la misma cuenta con la que abriste esta ficha.")).toBeVisible();
+  await page.getByLabel("Correo de tu cuenta").fill("qa@example.invalid");
+  await page.getByRole("button",{name:"Volver a ingresar sin salir de la ficha"}).click();
+  await expect(page.getByRole("button",{name:"Volver a ingresar sin salir de la ficha"})).toHaveCount(0);
+  await page.getByRole("button",{name:"Guardar",exact:true}).first().click();
+  await expect.poll(()=>state.writes.length).toBe(1);
+  expect(state.saved().medical_record_data.sector).toBe("CONSERVAR TRAS VENCIMIENTO");
+});
+
+test("six hours are counted from opening the ficha without discarding work at expiry",async({page})=>{
+  await page.clock.install({time:new Date()});
+  const state=await setup(page);
+  await page.getByLabel("Sector",{exact:true}).fill("SEIS HORAS DE TRABAJO");
+  await page.clock.fastForward(359*60000);
+  await expect(page.getByText(/Queda 1 minuto de sesión/)).toBeVisible();
+  await page.clock.fastForward(61000);
+  await expect(page.getByText("La sesión venció. La ficha sigue abierta y conserva tus cambios.")).toBeVisible();
+  await expect(page.getByLabel("Sector",{exact:true})).toHaveValue("SEIS HORAS DE TRABAJO");
+  await page.getByRole("button",{name:"Guardar",exact:true}).first().click();
+  expect(state.writes).toHaveLength(0);
+});
+
+test("encrypted drafts recover text, photo and pending signature after closing a tab",async({page,context})=>{
+  await setup(page);
+  await page.getByLabel("Sector",{exact:true}).fill("BORRADOR CLINICO FICTICIO");
+  const {photoFixture}=require('../helpers/photo-fixture.cjs');
+  const bytes=Buffer.from(photoFixture(64,40).split(',')[1],'base64');
+  await page.locator('input[type="file"]').first().setInputFiles({name:"foto-ficticia.png",mimeType:"image/png",buffer:bytes});
+  await page.getByRole("button",{name:/Firma Digital y Matrícula/}).click();
+  const canvas=page.locator('canvas:visible').first();
+  await canvas.scrollIntoViewIfNeeded();
+  const box=await canvas.boundingBox(); expect(box).not.toBeNull();
+  await page.mouse.move(box!.x+10,box!.y+25);await page.mouse.down();
+  await page.mouse.move(box!.x+70,box!.y+50,{steps:8});await page.mouse.up();
+  await expect.poll(async()=>Boolean((await protectedDraft(page))?.files?.evaluator)).toBe(true);
+  const stored=await protectedDraft(page);
+  expect(stored.record.medical_record_data.sector).toBe("BORRADOR CLINICO FICTICIO");
+  expect(stored.files.photo.name).toBe("foto-ficticia.png");
+  expect(stored.keyExtractable).toBe(false);
+  expect(stored.ciphertext).not.toContain("BORRADOR CLINICO FICTICIO");
+  await page.close();
+  const reopened=await context.newPage();
+  const state=await setup(reopened,0,{expectDraft:true});
+  await reopened.getByRole("button",{name:"Recuperar borrador",exact:true}).click();
+  await expect(reopened.getByLabel("Sector",{exact:true})).toHaveValue("BORRADOR CLINICO FICTICIO");
+  await expect(reopened.locator('img[src^="blob:"]').first()).toBeVisible();
+  await reopened.getByRole("button",{name:/Firma Digital y Matrícula/}).click();
+  await expect.poll(async()=>reopened.locator('canvas:visible').first().evaluate((element:HTMLCanvasElement)=>
+    element.getContext('2d')!.getImageData(0,0,element.width,element.height).data.some((value,index)=>index%4===3&&value>0))).toBe(true);
+  await reopened.getByRole("button",{name:"Guardar",exact:true}).first().click();
+  await expect.poll(()=>state.writes.length).toBe(1);
+  expect(state.uploads[0]).toEqual(expect.arrayContaining(["data_img","firma_medico_evaluador"]));
+  await expect.poll(()=>protectedDraft(reopened)).toBeNull();
+});
+
+test("a different account cannot save or recover another user's draft",async({page})=>{
+  const state=await setup(page);
+  await page.getByLabel("Sector",{exact:true}).fill("PRIVADO DE LA CUENTA ORIGINAL");
+  await expect.poll(async()=>(await protectedDraft(page))?.record.medical_record_data.sector).toBe("PRIVADO DE LA CUENTA ORIGINAL");
+  state.changeUser();
+  await page.getByRole("button",{name:"Guardar",exact:true}).first().click();
+  await expect(page.getByRole("button",{name:"Volver a ingresar sin salir de la ficha"})).toBeVisible();
+  expect(state.writes).toHaveLength(0);
+  await page.reload();
+  await expect(page.getByPlaceholder("Nombre completo")).toHaveValue("Paciente ficticio");
+  await expect(page.getByRole("button",{name:"Recuperar borrador",exact:true})).toHaveCount(0);
+  await expect(page.getByLabel("Sector",{exact:true})).toHaveValue("Sector ficticio");
+  expect(await protectedDraft(page,"different-user")).toBeNull();
+});
+
+test("a failed HC read never displays an editable empty replacement",async({page})=>{
+  await setup(page,0,{loadFailure:true});
+  await expect(page.getByText(/No se pudo cargar la ficha/)).toBeVisible();
+  await expect(page.getByPlaceholder("Nombre completo")).toHaveCount(0);
+  await expect(page.getByRole("button",{name:"Reintentar carga"})).toBeVisible();
+});
+
+test("draft storage errors keep editing and explicit server save available",async({page})=>{
+  const state=await setup(page);
+  await page.evaluate(()=>{indexedDB.open=()=>{throw new DOMException("Storage unavailable","SecurityError");};});
+  await page.getByLabel("Sector",{exact:true}).fill("GUARDAR AUN SIN ALMACENAMIENTO LOCAL");
+  await expect(page.getByText(/No pudimos guardar el borrador en este navegador/)).toBeVisible();
+  await page.getByRole("button",{name:"Guardar",exact:true}).first().click();
+  await expect.poll(()=>state.writes.length).toBe(1);
+  expect(state.saved().medical_record_data.sector).toBe("GUARDAR AUN SIN ALMACENAMIENTO LOCAL");
+});
+
+test("expired local drafts are removed rather than restored",async({page})=>{
+  await setup(page);
+  await page.getByLabel("Sector",{exact:true}).fill("BORRADOR VENCIDO");
+  await expect.poll(async()=>(await protectedDraft(page))?.record.medical_record_data.sector).toBe("BORRADOR VENCIDO");
+  await page.evaluate(async()=>{
+    const db=await new Promise<IDBDatabase>(resolve=>{const request=indexedDB.open("vitalis-protected-medical-drafts",1);request.onsuccess=()=>resolve(request.result);});
+    const tx=db.transaction("drafts","readwrite"),store=tx.objectStore("drafts");
+    const request=store.get(JSON.stringify(["hc-test-admin","hc-test-patient"]));
+    request.onsuccess=()=>store.put({...request.result,expiresAt:Date.now()-1});
+    await new Promise<void>((resolve,reject)=>{tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);});db.close();
+  });
+  await page.reload();
+  await expect(page.getByLabel("Sector",{exact:true})).toHaveValue("Sector ficticio");
+  expect(await protectedDraft(page)).toBeNull();
+});
+
+test("logout clears protected drafts and stops another open tab from recreating them",async({page,context})=>{
+  await page.clock.install({time:new Date()});
+  await setup(page);
+  await page.getByLabel("Sector",{exact:true}).fill("BORRAR AL CERRAR SESION");
+  await page.clock.fastForward(1000);
+  await expect.poll(async()=>(await protectedDraft(page))?.record.medical_record_data.sector).toBe("BORRAR AL CERRAR SESION");
+  const portal=await context.newPage();
+  await setup(portal,0,{expectDraft:true});
+  // Execute the same logout cleanup used by AuthContext in a second tab.
+  // This isolates draft protection from unrelated portal navigation.
+  const ts=require('typescript');
+  const source=require('node:fs').readFileSync(require('node:path').resolve('src/lib/medicalDrafts.ts'),'utf8');
+  const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText;
+  await portal.evaluate(async(code:string)=>{
+    const moduleExports: Record<string,any>={};
+    new Function('exports',code)(moduleExports);
+    await moduleExports.clearUserMedicalDrafts('hc-test-admin');
+  },compiled);
+  await expect.poll(()=>protectedDraft(page)).toBeNull();
+  await expect(page.getByRole("button",{name:"Volver a ingresar sin salir de la ficha"})).toBeVisible();
+  await page.getByLabel("Sector",{exact:true}).fill("SIGUE EN PANTALLA SIN RECREAR BORRADOR");
+  await page.clock.fastForward(2000);
+  expect(await protectedDraft(page)).toBeNull();
+});
+async function setup(page: Page, failure = 0, options: {loadFailure?: boolean; expectDraft?: boolean} = {}) {
+  page.on("dialog", dialog => dialog.accept());
+  let valid = true, currentUser = "hc-test-admin", saveFailure = failure;
+  let expires = Math.floor(Date.now() / 1000) + 21600;
   let saved: Record<string, any> = {
     id: "hc-test-record",
     patient_id: patient,
@@ -35,6 +196,7 @@ async function setup(page: Page, failure = 0) {
     medical_record_cuestionario_riesgos: { complete_name: "LEGACY_RISK" },
   };
   const writes: Record<string, any>[] = [];
+  const uploads: string[][] = [];
   await page.route("**/*", async (route) => {
     const request = route.request(),
       url = new URL(request.url());
@@ -55,17 +217,31 @@ async function setup(page: Page, failure = 0) {
       });
     if (request.method() === "OPTIONS") return reply({});
     if (request.method() === "GET" && url.pathname === "/verify-token")
-      return reply({ valid: true });
+      return reply({ valid, payload: valid ? {id:currentUser, exp:expires} : undefined });
+    if (request.method() === "POST" && url.pathname.startsWith(`/medical-session/${patient}`)) {
+      expect(request.headers()["content-type"]).toContain("application/x-www-form-urlencoded");
+      const body = new URLSearchParams(request.postData() || "");
+      if (url.pathname.endsWith("/reauthenticate")) {
+        if (body.get("password") !== "test-only") return reply({detail:"Correo o contraseña incorrectos."},401);
+        if (body.get("email") !== "qa@example.invalid") return reply({detail:"Ingresá con la misma cuenta con la que abriste esta ficha."},409);
+        valid = true; saveFailure = 0; currentUser = "hc-test-admin";
+      }
+      if (!valid) return reply({detail:"Invalid token"},401);
+      expires = Math.floor(Date.now() / 1000) + 21600;
+      return reply({user_id:currentUser,expires_at:expires});
+    }
+    if (request.method() === "POST" && url.pathname === "/logout") return reply({detail:"Logged out successfully"});
+    if (request.method() === "GET" && url.pathname === "/companies/") return reply([]);
     if (request.method() === "GET" && url.pathname === "/me")
-      return reply({
+      return valid ? reply({
         user: {
-          id: "hc-test-admin",
+          id: currentUser,
           role: "admin",
           is_active: true,
           email: "qa@example.invalid",
         },
         profile: {},
-      });
+      }) : reply({detail:"Invalid token"},401);
     if (request.method() === "GET" && url.pathname === "/patients/getPatients")
       return reply([
         {
@@ -78,7 +254,7 @@ async function setup(page: Page, failure = 0) {
       request.method() === "GET" &&
       url.pathname === `/medical-records/patient/${patient}`
     )
-      return reply([saved]);
+      return options.loadFailure ? reply({detail:"temporary error"},503) : reply([saved]);
     if (
       request.method() === "PUT" &&
       url.pathname === "/medical-records/hc-test-record"
@@ -89,7 +265,9 @@ async function setup(page: Page, failure = 0) {
       ).formData();
       const payload = JSON.parse(String(form.get("data")));
       writes.push(payload);
-      if (failure)
+      uploads.push([...form.entries()].filter(([,value]) => typeof value !== "string").map(([name]) => name));
+      if (saveFailure) {
+        if (saveFailure === 401) valid = false;
         return reply(
           {
             detail: {
@@ -97,8 +275,9 @@ async function setup(page: Page, failure = 0) {
               message: "Falta actualizar el esquema",
             },
           },
-          failure,
+          saveFailure,
         );
+      }
       saved = { ...saved, ...payload };
       return reply(saved);
     }
@@ -107,10 +286,9 @@ async function setup(page: Page, failure = 0) {
     );
   });
   await page.goto(`/system/medical-history/${patient}`);
-  await expect(page.getByPlaceholder("Nombre completo")).toHaveValue(
-    "Paciente ficticio",
-  );
-  return { writes, saved: () => saved };
+  if (options.expectDraft) await expect(page.getByRole("heading",{name:"Hay un borrador sin guardar de esta ficha"})).toBeVisible({timeout:15000});
+  else if (!options.loadFailure) await expect(page.getByPlaceholder("Nombre completo")).toHaveValue("Paciente ficticio",{timeout:15000});
+  return { writes, uploads, saved: () => saved, expire: () => {valid=false;}, changeUser: () => {currentUser="different-user";} };
 }
 
 test("other surgery, optional education and age survive saving and reopening", async ({

@@ -278,8 +278,10 @@ export const dataService = {
     fecha_medico_laboral?: string | null,
     firma_paciente?: Blob | null,
     firma_responsable?: Blob | null,
+    editor_user_id?: string,
   ): Promise<MedicalRecord> {
     const formData = new FormData();
+    if (editor_user_id) formData.append("editor_user_id", editor_user_id);
 
     // Agregar patient_id
     formData.append("patient_id", patient_id);
@@ -353,8 +355,10 @@ export const dataService = {
     fecha_medico_laboral?: string | null,
     firma_paciente?: Blob | null,
     firma_responsable?: Blob | null,
+    editor_user_id?: string,
   ): Promise<MedicalRecord> {
     const formData = new FormData();
+    if (editor_user_id) formData.append("editor_user_id", editor_user_id);
 
     formData.append("patient_id", patient_id);
     formData.append(

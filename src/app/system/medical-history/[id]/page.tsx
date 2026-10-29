@@ -1,5 +1,5 @@
 "use client";
-import {useState, useEffect, use, useCallback} from "react";
+import {useState, useEffect, use, useCallback, useRef} from "react";
 import {ArrowLeft, Printer} from "lucide-react";
 import {useRouter} from "next/navigation";
 import {pdf} from "@react-pdf/renderer";
@@ -47,6 +47,10 @@ import {NeuroClinicalExamSection} from "../components/sections/NeuroClinicalExam
 import {PsychiatricClinicalExamSection} from "../components/sections/PsychiatricClinicalExam";
 import {ImmunizationsSection} from "../components/sections/Immunizations";
 import CanvasFirm from "../components/CanvasFirm";
+import {useMedicalSession} from "../useMedicalSession";
+import {useMedicalDraft} from "../useMedicalDraft";
+import {MedicalSessionPanel} from "../components/MedicalSessionPanel";
+import type {MedicalDraftSnapshot} from "@/lib/medicalDrafts";
 
 // const raleway = Raleway({
 //   subsets: ["latin"],
@@ -65,7 +69,12 @@ interface PageProps {
 
 export default function MedicalHistoryPage({params}: PageProps) {
   const patientId = use(params).id;
+  return <MedicalHistoryEditor key={patientId} patientId={patientId} />;
+}
+
+function MedicalHistoryEditor({patientId}: {patientId: string}) {
   const router = useRouter();
+  const session = useMedicalSession(patientId);
 
   const [medicalRecord, setMedicalRecord] = useState<MedicalRecord | null>(null);
   const [patientCompanyName, setPatientCompanyName] = useState<string | null>(null);
@@ -89,6 +98,38 @@ export default function MedicalHistoryPage({params}: PageProps) {
   const [editPatientSig, setEditPatientSig] = useState(false);
 
   const registry = useFormRegistry<MedicalRecord>();
+  const recordRef = useRef(medicalRecord); recordRef.current = medicalRecord;
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [restoredImages, setRestoredImages] = useState<Record<string, string>>({});
+  const imageURLs = useRef<string[]>([]);
+  const lastDraftSnapshot = useRef<MedicalDraftSnapshot | null>(null);
+  useEffect(() => () => imageURLs.current.forEach(url => URL.revokeObjectURL(url)), []);
+  const draft = useMedicalDraft(session.userId, patientId, session.ready && !loading && !!medicalRecord, session.generation, () => {
+    const entries = registry.getAll();
+    const record = {...(!entries.length && lastDraftSnapshot.current ? lastDraftSnapshot.current.record : recordRef.current)} as MedicalRecord;
+    for (const [key, handler] of entries) (record as any)[key] = handler.getValues();
+    const captured = {record, evaluatorDate, laboralDate, files: {
+      photo: dataImgFile, evaluator: evaluatorSignatureBlob, laboral: laboralSignatureBlob,
+      patient: patientSignatureBlob, responsable: medicoResponsableSignatureBlob,
+    }};
+    lastDraftSnapshot.current = captured;
+    return captured;
+  });
+  const restoreDraft = () => {
+    const recovered = draft.recover();
+    if (!recovered) return;
+    const previews: Record<string, string> = {};
+    for (const [name, blob] of Object.entries(recovered.files)) {
+      if (blob) { const url = URL.createObjectURL(blob); imageURLs.current.push(url); previews[name] = url; }
+    }
+    setRestoredImages(previews);
+    setMedicalRecord({...recovered.record, id: medicalRecord?.id || "", patient_id: patientId});
+    setEvaluatorDate(recovered.evaluatorDate); setLaboralDate(recovered.laboralDate);
+    setDataImgFile(recovered.files.photo as File | null);
+    setEvaluatorSignatureBlob(recovered.files.evaluator); setLaboralSignatureBlob(recovered.files.laboral);
+    setPatientSignatureBlob(recovered.files.patient); setMedicoResponsableSignatureBlob(recovered.files.responsable);
+    setEditEvaluatorSig(Boolean(recovered.files.evaluator)); setEditLaboralSig(Boolean(recovered.files.laboral)); setEditPatientSig(Boolean(recovered.files.patient));
+  };
 
   const handlePrint = async () => {
     if (!medicalRecord) return;
@@ -109,12 +150,15 @@ export default function MedicalHistoryPage({params}: PageProps) {
 
   // GET devuelve array -> elegimos el primero (después si querés elegimos por created_at)
   useEffect(() => {
+    if (!session.ready || recordRef.current) return;
+    let cancelled = false;
     const load = async () => {
       try {
         setLoading(true);
         setError(null);
 
         const [records, patients] = await Promise.all([dataService.getMedicalRecord(patientId), dataService.getPatients().catch(() => [])]);
+        if (cancelled) return;
         const patient = patients.find((item) => item.id === patientId || item.user_id === patientId);
         setPatientCompanyName(patient?.company_name || (patient?.company_id ? "Empresa" : "Particular"));
         const active = records[0] || ({} as MedicalRecord);
@@ -147,23 +191,21 @@ export default function MedicalHistoryPage({params}: PageProps) {
           setLaboralDate(finalLabDate);
         }
       } catch (_err) {
-        // Si falla, asumimos que no hay registro (o error de conexión), pero permitimos crear uno nuevo
-        // Ojo: idealmente chequear si es 404. Por ahora ante error asumimos "nuevo".
-        // O podríamos dejar el error visible si es "Network Error".
-        // Para cumplir "retorne formulario vacio":
-        setMedicalRecord({} as MedicalRecord);
-        // setError(err instanceof Error ? err.message : "Error cargando historial");
+        if (cancelled) return;
+        setError("No se pudo cargar la ficha. Reintentá sin completar una ficha vacía sobre este error.");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     void load();
-  }, [patientId]);
+    return () => { cancelled = true; };
+  }, [patientId, session.ready, session.generation, loadAttempt]);
 
   const handleSaveAll = useCallback(async () => {
     if (!medicalRecord) return;
 
+    let succeeded = false;
     try {
       setSaving(true);
       setError(null);
@@ -198,6 +240,8 @@ export default function MedicalHistoryPage({params}: PageProps) {
         return;
       }
 
+      await draft.flush();
+      await session.ensureCurrent();
       let result: MedicalRecord;
 
       const dataToSend: any = normalizeMedicalRecordDefaults(merged);
@@ -229,6 +273,7 @@ export default function MedicalHistoryPage({params}: PageProps) {
           laboralDate || null,
           patientSignatureBlob,
           medicoResponsableSignatureBlob,
+          session.userId || undefined,
         );
       } else {
         // CREATE
@@ -244,6 +289,7 @@ export default function MedicalHistoryPage({params}: PageProps) {
           laboralDate || null,
           patientSignatureBlob,
           medicoResponsableSignatureBlob,
+          session.userId || undefined,
         );
       }
       // After save, preserve the merged form data and update the ID from the response.
@@ -252,15 +298,16 @@ export default function MedicalHistoryPage({params}: PageProps) {
       const newId = result.id || medicalRecord.id;
 
       setMedicalRecord({...merged, id: newId, patient_id: patientId} as MedicalRecord);
+      await draft.markSaved();
       setSaved(true);
-      console.log("saved", result);
+      succeeded = true;
       setTimeout(() => {
         window.location.reload();
       }, 1000);
     } catch (err) {
       setError(getMedicalRecordErrorMessage(err));
     } finally {
-      setSaving(false);
+      if (!succeeded) setSaving(false);
     }
   }, [
     medicalRecord,
@@ -270,27 +317,30 @@ export default function MedicalHistoryPage({params}: PageProps) {
     evaluatorSignatureBlob,
     laboralDate,
     laboralSignatureBlob,
+    patientSignatureBlob, medicoResponsableSignatureBlob, session, draft,
   ]);
 
-  if (loading)
-    return (
-      <div className="mt-50 flex h-full w-full items-center justify-center">
-        <div className="h-16 w-16 animate-spin rounded-full border-4 border-t-4 border-gray-200 border-t-blue-600" />
-      </div>
-    );
-  if (!medicalRecord)
-    return (
-      <div className="mx-auto p-6">
-        No hay historial para este paciente. {error ? `(${error})` : ""}
-      </div>
-    );
+  if (!session.ready) return <main className="mx-auto max-w-3xl p-6"><MedicalSessionPanel session={session} /></main>;
+  if (loading || draft.checking) return <div className="p-8 text-center">Cargando ficha y borrador protegido…</div>;
+  if (!medicalRecord) return <main className="mx-auto max-w-3xl p-6"><MedicalSessionPanel session={session} /><p role="alert">{error}</p><button type="button" onClick={() => setLoadAttempt(value => value + 1)}>Reintentar carga</button></main>;
+  if (draft.candidate) return <main className="mx-auto max-w-3xl space-y-4 p-6">
+    <MedicalSessionPanel session={session} />
+    <h1 className="text-xl font-bold">Hay un borrador sin guardar de esta ficha</h1>
+    <p>Última copia en este navegador: {new Date(draft.candidate.updatedAt).toLocaleString("es-AR")}. Recuperalo para continuar o descartalo para ver la ficha guardada en el servidor.</p>
+    {draft.error && <p role="alert">{draft.error}</p>}
+    <button className="mr-4 rounded border bg-white p-3" type="button" onClick={restoreDraft}>Recuperar borrador</button>
+    <button className="rounded border bg-white p-3" type="button" onClick={() => void draft.discard()}>Descartar borrador</button>
+  </main>;
 
   return (
     <main className="mx-5 my-10 md:mx-30">
+      <MedicalSessionPanel session={session} />
+      {draft.error && <p role="alert" className="my-3 text-red-700">{draft.error}</p>}
+      {draft.dirty && <p className="my-3 text-sm" role="status">{draft.savedAt ? `Borrador protegido en este navegador: ${new Date(draft.savedAt).toLocaleTimeString("es-AR")}. Usá Guardar para incorporarlo a la ficha.` : "Hay cambios sin guardar. Preparando borrador protegido…"}</p>}
       <section className="flex flex-col items-center gap-4 md:flex-row md:items-start md:justify-between">
         <button
           className="mt-5 flex cursor-pointer items-center gap-1 font-bold md:mt-20"
-          onClick={() => router.back()}
+          onClick={async () => { if (!draft.dirty || window.confirm("Hay cambios sin guardar en la ficha. ¿Querés salir?")) { await draft.flush(); router.back(); } }}
         >
           <ArrowLeft />
           Volver al Portal
@@ -307,13 +357,16 @@ export default function MedicalHistoryPage({params}: PageProps) {
         </div>
       </section>
 
-      <form className="rounded-xl bg-white">
+      <form className="rounded-xl bg-white" onSubmit={event => {event.preventDefault(); void handleSaveAll();}}
+        onInputCapture={() => draft.markChanged()} onChangeCapture={() => draft.markChanged()}
+        onPointerUpCapture={event => {if (event.target instanceof HTMLCanvasElement) draft.markChanged();}}>
+        <fieldset disabled={saving} className="min-w-0" style={{pointerEvents: saving ? "none" : undefined}}>
         <p className="rounded-t-xl bg-[#5AB5E04D] px-5 py-2 font-semibold italic">
           Los campos con * son obligatorios
         </p>
         <PatientDataSection
           defaultCompanyName={patientCompanyName}
-          currentImageUrl={medicalRecord.medical_record_data_img?.url ?? null}
+          currentImageUrl={restoredImages.photo || medicalRecord.medical_record_data_img?.url || null}
           defaultValues={medicalRecord.medical_record_data ?? null}
           registerSection={(handler) => registry.register("medical_record_data", handler)}
           onImageChange={(file) => setDataImgFile(file)}
@@ -548,6 +601,8 @@ export default function MedicalHistoryPage({params}: PageProps) {
                         <div className="flex flex-col items-center gap-2">
                           <CanvasFirm
                             uploadOnSave={false}
+                            initialBlob={evaluatorSignatureBlob}
+                            onDraftChange={blob => { setEvaluatorSignatureBlob(blob); draft.markChanged(); }}
                             onSave={(blob) => setEvaluatorSignatureBlob(blob)}
                           />
                           {(medicalRecord.medical_record_signatures?.url ||
@@ -614,6 +669,8 @@ export default function MedicalHistoryPage({params}: PageProps) {
                         <div className="flex flex-col items-center gap-2">
                           <CanvasFirm
                             uploadOnSave={false}
+                            initialBlob={laboralSignatureBlob}
+                            onDraftChange={blob => { setLaboralSignatureBlob(blob); draft.markChanged(); }}
                             onSave={(blob) => setLaboralSignatureBlob(blob)}
                           />
                           {(medicalRecord.medical_record_laboral_signatures?.url ||
@@ -655,7 +712,7 @@ export default function MedicalHistoryPage({params}: PageProps) {
                     <p className="text-lg font-semibold">Firma del trabajador</p>
                     {(!medicalRecord.medical_record_patient_signatures?.url || editPatientSig) ? (
                       <div className="flex flex-col items-center gap-2">
-                        <CanvasFirm uploadOnSave={false} onSave={(blob) => setPatientSignatureBlob(blob)} />
+                        <CanvasFirm uploadOnSave={false} initialBlob={patientSignatureBlob} onDraftChange={blob => { setPatientSignatureBlob(blob); draft.markChanged(); }} onSave={(blob) => setPatientSignatureBlob(blob)} />
                         {medicalRecord.medical_record_patient_signatures?.url && <button className="text-sm text-red-500 hover:underline" type="button" onClick={() => { setEditPatientSig(false); setPatientSignatureBlob(null); }}>Cancelar cambio</button>}
                       </div>
                     ) : (
@@ -681,6 +738,7 @@ export default function MedicalHistoryPage({params}: PageProps) {
             Guardar
           </button>
         </div>
+        </fieldset>
       </form>
     </main>
   );

@@ -152,11 +152,11 @@ export const authService = {
    */
   async verifyToken(): Promise<boolean> {
     try {
-      await apiClient.get("/verify-token", {
+      const response = await apiClient.get("/verify-token", {
         withCredentials: true,
       });
 
-      return true;
+      return response.data?.valid === true;
     } catch (_error) {
       return false;
     }

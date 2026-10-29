@@ -28,12 +28,12 @@ test('validation errors show the field-specific explanation', () => {
   assert.match(message({response: {status: 422, data: {detail: {fields: [{field: 'sector', message: 'Sector admite hasta 255 caracteres.'}]}}}}), /Sector admite hasta 255 caracteres/);
 });
 
-test('expired medical save keeps the form mounted while other unauthorized requests redirect', async () => {
+test('all unauthorized requests preserve an open HC; other pages redirect', async () => {
   let onError;
   const removed = [];
   const oldWindow = global.window;
   const oldStorage = global.localStorage;
-  global.window = {location: {pathname: '/system/medical-history/patient', href: ''}};
+  global.window = {location: {pathname: '/system/medical-history/patient', href: ''}, dispatchEvent: () => true};
   global.localStorage = {removeItem: (key) => removed.push(key)};
   try {
     const code = fs.readFileSync(path.join(__dirname, '../src/lib/axios.ts'), 'utf8');
@@ -43,6 +43,9 @@ test('expired medical save keeps the form mounted while other unauthorized reque
     await assert.rejects(onError(expiredSave));
     assert.equal(global.window.location.href, '');
     assert.deepEqual(removed, []);
+    await assert.rejects(onError({response: {status: 401}, config: {url: '/patients/', method: 'get'}}));
+    assert.equal(global.window.location.href, '');
+    global.window.location.pathname = '/system/clientes';
     await assert.rejects(onError({response: {status: 401}, config: {url: '/patients/', method: 'get'}}));
     assert.equal(global.window.location.href, '/login');
   } finally {

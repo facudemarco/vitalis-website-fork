@@ -47,7 +47,8 @@ export const getMedicalRecordErrorMessage = (error: unknown) => {
   const status = (error as {response?: {status?: number}})?.response?.status;
   const detail = (error as {response?: {data?: {detail?: unknown}}})?.response?.data?.detail;
 
-  if (status === 401) return "Tu sesión venció. Volvé a iniciar sesión en otra pestaña y reintentá guardar aquí. Los datos ingresados se conservaron.";
+  if (status === 401) return "Tu sesión venció. Volvé a ingresar en esta misma ficha y reintentá guardar. Los datos ingresados se conservaron.";
+  if (status === 409) return "La sesión cambió de cuenta. Volvé a ingresar con la cuenta original; tus datos siguen en esta ficha.";
   if (status === 403) return "Tu usuario no tiene permiso para guardar esta ficha. Contactá a administración. Los datos ingresados se conservaron.";
   if (status && status >= 500) {
     const code = detail && typeof detail === "object" ? (detail as {code?: string}).code : undefined;

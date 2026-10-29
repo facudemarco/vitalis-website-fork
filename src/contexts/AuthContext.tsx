@@ -6,6 +6,7 @@ import type {UserAdmin, UserCompany, UserPatient, UserProfessional, UserProfile,
 
 import {authService} from "@/services/authService";
 import {dataService} from "@/services/dataService";
+import {clearUserMedicalDrafts} from "@/lib/medicalDrafts";
 
 type User = UserAdmin | UserCompany | UserPatient | UserProfessional | UserSecretary;
 
@@ -39,6 +40,8 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
 
           setUser(data.user ?? null);
           setProfile(data.profile ?? null);
+        } else if (typeof window !== "undefined" && window.location.pathname.startsWith("/system") && !window.location.pathname.startsWith("/system/medical-history/")) {
+          window.location.href = "/login";
         }
       } catch (error) {
         console.error("Error initializing auth:", error);
@@ -67,6 +70,10 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
   const logout = async () => {
     setIsLoading(true);
     try {
+      if (user?.id) {
+        try { await clearUserMedicalDrafts(user.id); }
+        catch { console.warn("No se pudo limpiar el borrador protegido de este navegador."); }
+      }
       await authService.logout();
       setUser(null);
       setProfile(null);

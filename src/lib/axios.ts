@@ -16,11 +16,13 @@ apiClient.interceptors.response.use(
     if (error && typeof error === "object" && "response" in error) {
       const axiosError = error as {response?: {status?: number}; config?: {url?: string; method?: string}};
 
+      if (axiosError.response?.status === 409 && typeof window !== "undefined" && window.location.pathname.startsWith("/system/medical-history/") && axiosError.config?.url?.startsWith("/medical-records")) {
+        window.dispatchEvent(new CustomEvent("medical-session-expired"));
+      }
       if (axiosError.response?.status === 401) {
-        // Keep an unsaved medical form mounted so the user can sign in in another tab and retry.
-        const isMedicalSave = axiosError.config?.url?.startsWith("/medical-records") &&
-          ["post", "put"].includes(axiosError.config?.method?.toLowerCase() ?? "");
-        if (typeof window !== "undefined" && window.location.pathname.startsWith("/system/medical-history/") && isMedicalSave) {
+        // Any unauthorized request must leave an open HC and its files mounted.
+        if (typeof window !== "undefined" && window.location.pathname.startsWith("/system/medical-history/")) {
+          window.dispatchEvent(new CustomEvent("medical-session-expired"));
           return Promise.reject(error);
         }
         // Token inválido o expirado

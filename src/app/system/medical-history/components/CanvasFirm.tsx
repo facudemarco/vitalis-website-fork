@@ -17,6 +17,8 @@ interface SignatureCanvasProps {
   strokeWidth?: number;
   /** Callback que recibe el Blob PNG de la firma al guardar */
   onSave?: (blob: Blob) => void;
+  onDraftChange?: (blob: Blob | null) => void;
+  initialBlob?: Blob | null;
   /** Callback al subir la firma exitosamente a la API */
   onUploadSuccess?: (data: unknown) => void;
   /** Callback al fallar la subida de la firma */
@@ -31,11 +33,21 @@ export default function SignatureCanvas({
   strokeColor = "#000",
   strokeWidth = 2,
   onSave,
+  onDraftChange,
+  initialBlob,
   onUploadSuccess,
   onUploadError,
   uploadOnSave = true,
 }: SignatureCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const draftChange = useRef(onDraftChange); draftChange.current = onDraftChange;
+  const lastEmitted = useRef<Blob | null | undefined>(undefined);
+  const baseImage = useRef<HTMLImageElement | null>(null);
+  const draftVersion = useRef(0);
+  const emitDraft = useCallback(() => {
+    const version = ++draftVersion.current;
+    canvasRef.current?.toBlob(blob => { if (blob && version === draftVersion.current) { lastEmitted.current = blob; draftChange.current?.(blob); } }, "image/png");
+  }, []);
   const containerRef = useRef<HTMLDivElement>(null);
   const pathsRef = useRef<{x: number; y: number}[][]>([]);
   const currentPathRef = useRef<{x: number; y: number}[]>([]);
@@ -95,6 +107,21 @@ export default function SignatureCanvas({
     return () => observer.disconnect();
   }, [setupCanvas]);
 
+  useEffect(() => {
+    if (!initialBlob || initialBlob === lastEmitted.current) return;
+    pathsRef.current = [];
+    const url = URL.createObjectURL(initialBlob);
+    const image = new Image();
+    let cancelled = false;
+    image.onload = () => {
+      if (cancelled) return;
+      baseImage.current = image;
+      setupCanvas(); setIsEmpty(false);
+    };
+    image.src = url;
+    return () => { cancelled = true; URL.revokeObjectURL(url); };
+  }, [initialBlob, setupCanvas]);
+
   // ---------- Helpers ----------
 
   const redrawPaths = (ctx: CanvasRenderingContext2D) => {
@@ -106,6 +133,7 @@ export default function SignatureCanvas({
 
     ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
 
+    if (baseImage.current) ctx.drawImage(baseImage.current, 0, 0, canvas.width / dpr, canvas.height / dpr);
     for (const path of pathsRef.current) {
       if (path.length < 2) continue;
       ctx.beginPath();
@@ -193,9 +221,10 @@ export default function SignatureCanvas({
     if (isDrawing && currentPathRef.current.length > 0) {
       pathsRef.current.push([...currentPathRef.current]);
       currentPathRef.current = [];
+      emitDraft();
     }
     setIsDrawing(false);
-  }, [isDrawing]);
+  }, [isDrawing, emitDraft]);
 
   // ---------- Actions ----------
 
@@ -215,7 +244,9 @@ export default function SignatureCanvas({
           const dpr = window.devicePixelRatio || 1;
           ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
           ctx.drawImage(img, 0, 0, canvas.width / dpr, canvas.height / dpr);
+          baseImage.current = img;
           pathsRef.current = [];
+          emitDraft();
           setIsEmpty(false);
           setStatus("idle");
         };
@@ -223,7 +254,7 @@ export default function SignatureCanvas({
       };
       reader.readAsDataURL(file);
     },
-    [],
+    [emitDraft],
   );
 
   const handleModeChange = useCallback(
@@ -239,6 +270,7 @@ export default function SignatureCanvas({
         }
       }
       pathsRef.current = [];
+      baseImage.current = null; draftVersion.current++; lastEmitted.current = null; draftChange.current?.(null);
       setIsEmpty(true);
       setStatus("idle");
       setErrorMessage("");
@@ -261,6 +293,7 @@ export default function SignatureCanvas({
     ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
     pathsRef.current = [];
     currentPathRef.current = [];
+    baseImage.current = null; draftVersion.current++; lastEmitted.current = null; draftChange.current?.(null);
     setIsEmpty(true);
     setStatus("idle");
     setErrorMessage("");
@@ -282,10 +315,10 @@ export default function SignatureCanvas({
     ctx.lineWidth = strokeWidth;
     redrawPaths(ctx);
 
-    if (pathsRef.current.length === 0) {
-      setIsEmpty(true);
-    }
-  }, [strokeColor, strokeWidth]);
+    if (pathsRef.current.length === 0 && !baseImage.current) {
+      setIsEmpty(true); lastEmitted.current = null; draftChange.current?.(null);
+    } else emitDraft();
+  }, [strokeColor, strokeWidth, emitDraft]);
 
   const handleSave = useCallback(async () => {
     const canvas = canvasRef.current;
