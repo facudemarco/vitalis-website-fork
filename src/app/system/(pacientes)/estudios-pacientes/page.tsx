@@ -3,10 +3,11 @@ import {useEffect, useState} from "react";
 import {pdf} from "@react-pdf/renderer";
 import {FileText} from "lucide-react";
 
-import {Studies, MedicalRecord} from "@/types";
+import {Studies, MedicalRecord, UserPatient} from "@/types";
 
 import {Clients} from "@/components/ui/Icons";
 import {useAuth} from "@/contexts/AuthContext";
+import UnifiedStudiesDownload from "@/app/system/components/UnifiedStudiesDownload";
 import {dataService} from "@/services/dataService";
 
 import {MedicalHistoryPDF} from "../../medical-history/components/MedicalHistoryPDF";
@@ -17,6 +18,7 @@ import EstudiosCard from "./EstudiosCard";
 export default function EstudiosPacientesPage() {
   const {profile} = useAuth();
   const [studies, setStudies] = useState<Studies[]>([]);
+  const [patient, setPatient] = useState<UserPatient | null>(null);
   const patient_id = profile?.patient_id;
   const [isLoading, setIsLoading] = useState(true);
   const [downloadingHistory, setDownloadingHistory] = useState(false);
@@ -28,6 +30,7 @@ export default function EstudiosPacientesPage() {
           const response = await dataService.getStudiesByPatientId(patient_id);
 
           setStudies(response);
+          void dataService.getPatientById(patient_id).then(setPatient).catch(() => setPatient(null));
           setIsLoading(false);
         } catch (error) {
           console.error("Error fetching studies:", error);
@@ -81,6 +84,7 @@ export default function EstudiosPacientesPage() {
           )}
         </div>
 
+        {patient && <UnifiedStudiesDownload patient={patient} studies={studies} />}
         {/* Botón de descargar historial clínico abajo a la izquierda */}
         <div className="flex justify-end pt-2">
           <button

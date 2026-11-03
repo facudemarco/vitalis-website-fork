@@ -6,6 +6,7 @@ import {UserPatient, UserCompany, StudiesCategory} from "@/types";
 
 import {ArrowLeft, Estudies} from "@/components/ui/Icons";
 import {dataService} from "@/services/dataService";
+import {normalizeSearch, studyPriority} from "@/lib/studyOrder";
 
 import Panel from "../../components/Panel";
 
@@ -30,6 +31,7 @@ export default function page() {
   const [studyCategories, setStudyCategories] = useState<StudiesCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const [patientQuery, setPatientQuery] = useState("");
 
   // Modal State
   const [selectedPatientForStudy, setSelectedPatientForStudy] = useState<UserPatient | null>(null);
@@ -66,6 +68,7 @@ export default function page() {
   }, []);
 
   const handleParticularClick = () => {
+    setPatientQuery("");
     setSelectedCompanyId(null);
     setView("patients");
   };
@@ -75,6 +78,7 @@ export default function page() {
   };
 
   const handleCompanyClick = (companyId: string) => {
+    setPatientQuery("");
     setSelectedCompanyId(companyId);
     setView("patients");
   };
@@ -165,11 +169,12 @@ export default function page() {
 
   const getFilteredPatients = () => {
     if (view !== "patients") return [];
-    if (selectedCompanyId) {
-      return patients.filter((p) => p.company_id === selectedCompanyId);
-    }
-
-    return patients.filter((p) => !p.company_id);
+    const terms = normalizeSearch(patientQuery).split(" ").filter(Boolean);
+    return patients.filter((p) => {
+      if (selectedCompanyId ? p.company_id !== selectedCompanyId : p.company_id) return false;
+      const name = normalizeSearch(`${p.first_name ?? ""} ${p.last_name ?? ""}`);
+      return terms.every((term) => name.includes(term));
+    });
   };
 
   const filteredPatients = getFilteredPatients();
@@ -181,7 +186,7 @@ export default function page() {
     ...LEGACY_STUDY_TYPES.filter(
       ([value]) => !categoryNames.has(value.trim().toLowerCase()),
     ).map(([value, label]) => ({value, label})),
-  ];
+  ].sort((a, b) => studyPriority(a.value) - studyPriority(b.value));
 
   if (loading) {
     return (
@@ -266,6 +271,16 @@ export default function page() {
           <h2 className="mb-4 text-center text-xl font-bold">
             {selectedCompanyId ? "Empleados de la empresa" : "Pacientes Particulares"}
           </h2>
+          <label className="mb-4 block">
+            <span className="mb-1 block font-semibold">Buscar por nombre o apellido</span>
+            <input
+              type="search"
+              className="w-full max-w-md rounded-lg border border-gray-400 px-3 py-2"
+              value={patientQuery}
+              onChange={(event) => setPatientQuery(event.target.value)}
+              placeholder="Ingresá un nombre o apellido"
+            />
+          </label>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
             {filteredPatients.map((patient) => (
               <div
@@ -286,7 +301,9 @@ export default function page() {
               </div>
             ))}
             {filteredPatients.length === 0 && (
-              <p className="col-span-3 text-center">No hay pacientes para mostrar.</p>
+              <p className="col-span-3 text-center">
+                {patientQuery.trim() ? "No hay pacientes que coincidan con la búsqueda." : "No hay pacientes para mostrar."}
+              </p>
             )}
           </div>
         </>

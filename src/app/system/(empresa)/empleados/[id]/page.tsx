@@ -9,6 +9,7 @@ import {MedicalRecord, Studies, UserPatient} from "@/types";
 import EstudiosCard from "@/app/system/(pacientes)/estudios-pacientes/EstudiosCard";
 import Panel from "@/app/system/components/Panel";
 import {ArrowLeft, Clients} from "@/components/ui/Icons";
+import UnifiedStudiesDownload from "@/app/system/components/UnifiedStudiesDownload";
 import {dataService} from "@/services/dataService";
 import {MedicalHistoryPDF} from "@/app/system/medical-history/components/MedicalHistoryPDF";
 
@@ -110,6 +111,7 @@ export default function EstudiosPacientesPage({params}: PageProps) {
 
         {/* Botón de descargar historial clínico abajo a la izquierda */}
         <div className="flex justify-end pt-2">
+          {data && <UnifiedStudiesDownload patient={data} studies={studies} />}
           <button
             className="bg-blue flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             disabled={downloadingHistory}
