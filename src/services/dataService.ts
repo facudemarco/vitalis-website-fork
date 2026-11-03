@@ -13,6 +13,7 @@ import type {
 
 import {apiClient} from "@/lib/axios";
 import {normalizeMedicalRecordDefaults} from "@/lib/medicalRecordDefaults";
+import {orderPatientStudies} from "@/lib/studyOrder";
 
 export type User = UserAdmin | UserCompany | UserPatient | UserProfessional | UserSecretary;
 
@@ -257,7 +258,7 @@ export const dataService = {
 
     if (!response.data) throw new Error("Error fetching studies");
 
-    return response.data.studies as Studies[];
+    return orderPatientStudies(response.data.studies as Studies[]);
   },
 
   /**

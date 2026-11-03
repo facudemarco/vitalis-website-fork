@@ -7,6 +7,7 @@ import {Studies, UserPatient} from "@/types";
 import EstudiosCard from "@/app/system/(pacientes)/estudios-pacientes/EstudiosCard";
 import Panel from "@/app/system/components/Panel";
 import {ArrowLeft, Clients} from "@/components/ui/Icons";
+import UnifiedStudiesDownload from "@/app/system/components/UnifiedStudiesDownload";
 import {dataService} from "@/services/dataService";
 
 interface PageProps {
@@ -71,6 +72,7 @@ export default function EstudiosPacientesPage({params}: PageProps) {
         {studies.map((study) => (
           <EstudiosCard key={study.id} studies={study} />
         ))}
+        <UnifiedStudiesDownload patient={data} studies={studies} />
       </section>
     </Panel>
   );

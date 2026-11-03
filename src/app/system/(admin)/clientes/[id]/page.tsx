@@ -5,6 +5,7 @@ import {use, useEffect, useRef, useState} from "react";
 
 import {Studies, UserPatient} from "@/types";
 
+import UnifiedStudiesDownload from "@/app/system/components/UnifiedStudiesDownload";
 import {dataService} from "@/services/dataService";
 import EstudiosCard from "@/app/system/(pacientes)/estudios-pacientes/EstudiosCard";
 import Panel from "@/app/system/components/Panel";
@@ -245,13 +246,19 @@ export default function EstudiosPacientesPage({params}: PageProps) {
       <section className="my-5 flex flex-col gap-5">
         {consentUploadControl}
         {heightUploadControl}
+        <div className="flex flex-wrap items-start justify-between gap-3">
         <Link className="flex items-center gap-1 font-bold" href="/system/clientes">
           <ArrowLeft />
           Volver
         </Link>
+          <UnifiedStudiesDownload patient={data} studies={studies} />
+        </div>
         {studies.map((study) => (
           <EstudiosCard key={study.id} studies={study} />
         ))}
+        <div className="flex justify-center">
+          <UnifiedStudiesDownload patient={data} studies={studies} />
+        </div>
       </section>
     </Panel>
   );
