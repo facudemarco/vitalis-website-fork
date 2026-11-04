@@ -4,6 +4,7 @@ import {useState} from "react";
 import type {Studies, UserPatient} from "@/types";
 import {dataService} from "@/services/dataService";
 import {orderPatientStudies} from "@/lib/studyOrder";
+import {normalizeMedicalRecordDefaults} from "@/lib/medicalRecordDefaults";
 
 function pdfFiles(studies: Studies[]) {
   return orderPatientStudies(studies).flatMap((study) =>
@@ -38,19 +39,50 @@ export default function UnifiedStudiesDownload({patient, studies}: {patient: Use
         setError("No hay archivos PDF para unificar.");
         return;
       }
-      const {PDFDocument} = await import("pdf-lib");
+      const records = await dataService.getMedicalRecord(patientId);
+      const medicalRecord = records[0];
+      if (!medicalRecord?.id) {
+        setError("No se encontró la historia clínica guardada de este paciente.");
+        return;
+      }
+      const [{PDFDocument}, {pdf}, {MedicalHistoryPDF}] = await Promise.all([
+        import("pdf-lib"),
+        import("@react-pdf/renderer"),
+        import("../medical-history/components/MedicalHistoryPDF"),
+      ]);
       const merged = await PDFDocument.create();
+      try {
+        const history = await pdf(
+          <MedicalHistoryPDF
+            medicalRecord={normalizeMedicalRecordDefaults(medicalRecord)}
+            patientCompanyName={currentPatient.company_name || (currentPatient.company_id ? "Empresa" : "Particular")}
+          />,
+        ).toBlob();
+        const source = await PDFDocument.load(await history.arrayBuffer());
+        if (!source.getPageCount()) throw new Error();
+        for (const page of await merged.copyPages(source, source.getPageIndices())) {
+          merged.addPage(page);
+        }
+      } catch {
+        setError("No se pudo generar la historia clínica. Volvé a intentar la descarga.");
+        return;
+      }
       for (const file of files) {
         try {
-          const response = await fetch(file.file_path, {credentials: "include", cache: "no-store"});
-          if (!response.ok) throw new Error();
-          const source = await PDFDocument.load(await response.arrayBuffer());
+          const bytes = await dataService.getStudyPdf(file.file_path);
+          const source = await PDFDocument.load(bytes);
           if (!source.getPageCount()) throw new Error();
           for (const page of await merged.copyPages(source, source.getPageIndices())) {
             merged.addPage(page);
           }
-        } catch {
-          setError(`No se pudo incorporar el PDF «${file.original_filename}». Revisá si se puede descargar y abrir por separado.`);
+        } catch (failure) {
+          const status = (failure as {response?: {status?: number}})?.response?.status;
+          const reason = status === 404
+            ? "El archivo no está disponible en el servidor que estás usando."
+            : status === 401 || status === 403
+              ? "La sesión actual no tiene acceso al archivo."
+              : "Revisá si se puede descargar y abrir por separado.";
+          setError(`No se pudo incorporar el PDF «${file.original_filename}». ${reason}`);
           return;
         }
       }

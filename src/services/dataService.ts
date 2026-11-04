@@ -247,6 +247,17 @@ export const dataService = {
     return response.data;
   },
 
+  async getStudyPdf(filePath: string): Promise<ArrayBuffer> {
+    const pathname = new URL(filePath, "https://vitalis.invalid").pathname;
+    const match = pathname.match(/\/studies\/files\/public\/([^/]+)$/);
+    if (!match) throw new Error("La dirección del archivo de estudio no es válida.");
+    const response = await apiClient.get<ArrayBuffer>(`/studies/files/public/${match[1]}`, {
+      withCredentials: true,
+      responseType: "arraybuffer",
+    });
+    return response.data;
+  },
+
   /**
    * Obtener estudios por patient_id
    * @param patient_id - ID del paciente
