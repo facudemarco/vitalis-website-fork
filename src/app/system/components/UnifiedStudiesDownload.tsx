@@ -3,11 +3,16 @@
 import {useState} from "react";
 import type {Studies, UserPatient} from "@/types";
 import {dataService} from "@/services/dataService";
-import {orderPatientStudies} from "@/lib/studyOrder";
+import {normalizeSearch, orderPatientStudies} from "@/lib/studyOrder";
 import {normalizeMedicalRecordDefaults} from "@/lib/medicalRecordDefaults";
 
 function pdfFiles(studies: Studies[]) {
-  return orderPatientStudies(studies).flatMap((study) =>
+  const isConsent = (study: Studies) =>
+    /^consentimientos? informados?$/.test(normalizeSearch(study.study_type));
+  const orderedStudies = orderPatientStudies(studies).sort(
+    (a, b) => Number(isConsent(b)) - Number(isConsent(a)),
+  );
+  return orderedStudies.flatMap((study) =>
     (study.files ?? [])
       .filter((file) => file.mime_type?.split(";")[0].trim().toLowerCase() === "application/pdf" ||
         /\.pdf$/i.test(file.original_filename))
