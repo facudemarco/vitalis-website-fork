@@ -106,6 +106,24 @@ export default function EstudiosCard({studies}: {studies: Studies}) {
     }
   };
 
+  const handleConfirmWithoutReport = async () => {
+    if (!window.confirm("¿Confirmar este estudio y cambiar su estado a Disponible?")) return;
+
+    setUploading(true);
+    try {
+      await dataService.changeStudyStatus(studies.id, {
+        status: "Disponible",
+        study_type: studies.study_type,
+      });
+      window.location.reload();
+    } catch (error) {
+      console.error("Error al confirmar el estudio:", error);
+      alert("No se pudo confirmar el estudio. Por favor, intenta nuevamente.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
@@ -223,15 +241,27 @@ export default function EstudiosCard({studies}: {studies: Studies}) {
               )}
           </div>
 
-          {/* Action button for Specialist / Médico */}
-          {userData?.role === "professional" && studies.status === "pending" && (
-            <button
-              className="cursor-pointer rounded bg-white/20 px-3 py-1 font-medium underline transition hover:bg-white/30"
-              onClick={() => setShowUploadModal(true)}
-            >
-              Agregar informe
-            </button>
-          )}
+          {/* Staff can confirm report-optional studies individually. */}
+          {(userData?.role === "professional" ||
+            userData?.role === "admin" ||
+            userData?.role === "secretary") &&
+            studies.status === "pending" &&
+            (studies.requires_report === false ? (
+              <button
+                className="cursor-pointer rounded bg-white/20 px-3 py-1 font-medium underline transition hover:bg-white/30 disabled:opacity-60"
+                disabled={uploading}
+                onClick={() => void handleConfirmWithoutReport()}
+              >
+                {uploading ? "Confirmando..." : "Confirmar estudio"}
+              </button>
+            ) : userData.role === "professional" ? (
+              <button
+                className="cursor-pointer rounded bg-white/20 px-3 py-1 font-medium underline transition hover:bg-white/30"
+                onClick={() => setShowUploadModal(true)}
+              >
+                Agregar informe
+              </button>
+            ) : null)}
         </div>
       </section>
 
