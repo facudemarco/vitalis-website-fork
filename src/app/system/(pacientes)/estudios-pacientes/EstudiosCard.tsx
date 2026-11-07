@@ -269,37 +269,44 @@ export default function EstudiosCard({studies}: {studies: Studies}) {
               )}
           </div>
 
-          {/* Action button for Specialist / Médico */}
-          {userData?.role === "professional" && studies.status === "pending" && (
-            <div className="flex flex-wrap gap-2">
-              {studies.requires_report !== false ? (
-                <button
-                  className="cursor-pointer rounded bg-white/20 px-3 py-1 font-medium underline transition hover:bg-white/30"
-                  disabled={uploading}
-                  onClick={() => setShowUploadModal(true)}
-                >
-                  Agregar informe
-                </button>
-              ) : (
-                <>
-                  <button
-                    className="cursor-pointer rounded bg-white/20 px-3 py-1 font-medium underline transition hover:bg-white/30 disabled:opacity-50"
-                    disabled={uploading}
-                    onClick={() => void handleConfirmWithoutReport()}
-                  >
-                    Confirmar estudio
-                  </button>
-                  <button
-                    className="cursor-pointer rounded bg-white/20 px-3 py-1 font-medium underline transition hover:bg-white/30 disabled:opacity-50"
-                    disabled={uploading}
-                    onClick={() => setShowUploadModal(true)}
-                  >
-                    Agregar informe (opcional)
-                  </button>
-                </>
-              )}
-            </div>
-          )}
+          {/* Staff can confirm this study individually when no report is required. */}
+          {(userData?.role === "professional" ||
+            userData?.role === "admin" ||
+            userData?.role === "secretary") &&
+            studies.status === "pending" && (
+              <div className="flex flex-wrap gap-2">
+                {studies.requires_report !== false ? (
+                  userData.role === "professional" ? (
+                    <button
+                      className="cursor-pointer rounded bg-white/20 px-3 py-1 font-medium underline transition hover:bg-white/30"
+                      disabled={uploading}
+                      onClick={() => setShowUploadModal(true)}
+                    >
+                      Agregar informe
+                    </button>
+                  ) : null
+                ) : (
+                  <>
+                    <button
+                      className="cursor-pointer rounded bg-white/20 px-3 py-1 font-medium underline transition hover:bg-white/30 disabled:opacity-50"
+                      disabled={uploading}
+                      onClick={() => void handleConfirmWithoutReport()}
+                    >
+                      {uploading ? "Confirmando..." : "Confirmar estudio"}
+                    </button>
+                    {userData.role === "professional" && (
+                      <button
+                        className="cursor-pointer rounded bg-white/20 px-3 py-1 font-medium underline transition hover:bg-white/30 disabled:opacity-50"
+                        disabled={uploading}
+                        onClick={() => setShowUploadModal(true)}
+                      >
+                        Agregar informe (opcional)
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
         </div>
         {canDelete && (
           <div className="flex w-full flex-col gap-2 border-t border-white/30 pt-3">
