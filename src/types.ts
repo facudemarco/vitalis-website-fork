@@ -56,6 +56,7 @@ export interface Studies {
   created_at?: string;
   status: string;
   study_file?: string;
+  requires_report?: boolean;
   files?: StudyFile[];
 }
 
