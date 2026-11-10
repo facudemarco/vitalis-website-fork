@@ -260,14 +260,49 @@ export default function ClientesAdminPage() {
                       <td className="px-2 py-2 break-words">
                         {canEdit ? (
                           <select className="rounded border border-gray-500 bg-[#333333] px-2 py-1 text-white" aria-label={`Estado de ${row.first_name ?? ""} ${row.last_name ?? ""}`} value={row.patient_status ?? "En proceso"} onChange={async (event) => {
-                            const patientStatus = event.target.value as PatientWorkflowStatus;
-                            try {
-                              await dataService.updatePatientStatus(row.id, patientStatus);
+                            const select = event.currentTarget;
+                            const previousStatus = row.patient_status ?? "En proceso";
+                            const patientStatus = select.value as PatientWorkflowStatus;
+                            const applyStatus = async (confirmIncomplete = false) => {
+                              await dataService.updatePatientStatus(row.id, patientStatus, confirmIncomplete);
                               setPatients((current) => current.map((patient) => patient.id === row.id ? {...patient, patient_status: patientStatus} : patient));
                               setActionMessage("");
+                            };
+
+                            try {
+                              await applyStatus();
                             } catch (error) {
                               const detail = (error as {response?: {data?: {detail?: unknown}}})?.response?.data?.detail;
-                              setActionMessage(typeof detail === "string" ? detail : "No se pudo actualizar el estado del paciente.");
+                              const completionError = typeof detail === "object" && detail !== null
+                                ? detail as {code?: string; message?: string; no_studies?: boolean; incomplete_studies?: Array<{study_type: string; reasons: string[]}>}
+                                : null;
+
+                              if (patientStatus === "Completado" && completionError?.code === "PATIENT_STUDIES_INCOMPLETE") {
+                                const missingStudies = completionError.incomplete_studies ?? [];
+                                const missingDetails = missingStudies
+                                  .map((study) => `• ${study.study_type}: ${study.reasons.join(", ")}`)
+                                  .join("\\n");
+                                const warning = [
+                                  completionError.message ?? "Hay estudios incompletos.",
+                                  missingDetails,
+                                  "¿Querés marcar al paciente como Completado de todos modos?",
+                                ].filter(Boolean).join("\\n\\n");
+
+                                if (window.confirm(warning)) {
+                                  try {
+                                    await applyStatus(true);
+                                  } catch (confirmationError) {
+                                    const retryDetail = (confirmationError as {response?: {data?: {detail?: unknown}}})?.response?.data?.detail;
+                                    setActionMessage(typeof retryDetail === "string" ? retryDetail : "No se pudo completar el estado del paciente.");
+                                    select.value = previousStatus;
+                                  }
+                                } else {
+                                  select.value = previousStatus;
+                                }
+                              } else {
+                                setActionMessage(typeof detail === "string" ? detail : "No se pudo actualizar el estado del paciente.");
+                                select.value = previousStatus;
+                              }
                             }
                           }}>
                             <option value="Completado">Completado</option>

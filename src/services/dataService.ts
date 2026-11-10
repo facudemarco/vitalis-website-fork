@@ -570,10 +570,16 @@ export const dataService = {
   /**
    * Actualizar estado de progreso del paciente (Admin y secretaría).
    */
-  async updatePatientStatus(patientId: string, patientStatus: PatientWorkflowStatus): Promise<{patient_id: string; patient_status: PatientWorkflowStatus}> {
-    const response = await apiClient.patch(`/patients/${patientId}/status`, {patient_status: patientStatus}, {
-      withCredentials: true,
-    });
+  async updatePatientStatus(
+    patientId: string,
+    patientStatus: PatientWorkflowStatus,
+    confirmIncomplete = false,
+  ): Promise<{patient_id: string; patient_status: PatientWorkflowStatus}> {
+    const response = await apiClient.patch(
+      `/patients/${patientId}/status`,
+      {patient_status: patientStatus, confirm_incomplete: confirmIncomplete},
+      {withCredentials: true},
+    );
     return response.data;
   },
 
