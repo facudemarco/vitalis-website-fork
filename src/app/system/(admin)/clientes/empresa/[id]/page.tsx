@@ -33,6 +33,8 @@ const getStudyDetail = (studyType?: string) => {
   return studyType;
 };
 
+const getCreatedDate = (value?: string | null) => value?.slice(0, 10) ?? "";
+
 type DeletionSummary = {
   patient_name: string;
   confirmation_token: string;
@@ -49,6 +51,7 @@ export default function EmpresaEmpleadosPage() {
   const [company, setCompany] = useState<UserCompany | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [search, setSearch] = useState<string>("");
+  const [createdDateFilter, setCreatedDateFilter] = useState("");
   const [editingPatient, setEditingPatient] = useState<UserPatient | null>(null);
   const [saving, setSaving] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
@@ -112,14 +115,18 @@ export default function EmpresaEmpleadosPage() {
 
   const title = company ? `Empleados de ${company.name}` : "Empleados de Empresa";
   const query = search.toLowerCase();
-  const filteredPatients = patients.filter((patient) => {
-    const fullName = `${patient.first_name ?? ""} ${patient.last_name ?? ""}`.toLowerCase();
-    return (
-      patient.first_name?.toLowerCase().includes(query) ||
-      patient.last_name?.toLowerCase().includes(query) ||
-      fullName.includes(query)
-    );
-  });
+  const filteredPatients = patients
+    .filter((patient) => {
+      const fullName = `${patient.first_name ?? ""} ${patient.last_name ?? ""}`.toLowerCase();
+      const matchesSearch =
+        patient.first_name?.toLowerCase().includes(query) ||
+        patient.last_name?.toLowerCase().includes(query) ||
+        fullName.includes(query);
+      const matchesDate =
+        !createdDateFilter || getCreatedDate(patient.created_at) === createdDateFilter;
+      return Boolean(matchesSearch && matchesDate);
+    })
+    .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
 
   return (
     <Panel pageIcon={<Clients />} pageTitle={title}>
@@ -131,7 +138,7 @@ export default function EmpresaEmpleadosPage() {
           </Link>
         </div>
 
-        <div className="mb-3">
+        <div className="mb-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
           <input
             className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-black placeholder-gray-400 focus:border-blue-400 focus:outline-none"
             id="empleados-search"
@@ -140,6 +147,16 @@ export default function EmpresaEmpleadosPage() {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
+          <label className="flex flex-col gap-1 text-sm text-gray-700">
+            Fecha de alta
+            <input
+              aria-label="Filtrar empleados por fecha de alta"
+              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-black"
+              type="date"
+              value={createdDateFilter}
+              onChange={(event) => setCreatedDateFilter(event.target.value)}
+            />
+          </label>
         </div>
 
         {actionMessage && <p className="mb-3 text-sm text-red-700" role="alert">{actionMessage}</p>}
@@ -151,6 +168,7 @@ export default function EmpresaEmpleadosPage() {
                 <th className="px-3 py-2 text-left">Nombre</th>
                 <th className="px-3 py-2 text-left">Apellido</th>
                 <th className="px-3 py-2 text-left">DNI</th>
+                <th className="px-3 py-2 text-left">Fecha de alta</th>
                 <th className="px-3 py-2 text-left">Fecha de nacimiento</th>
                 <th className="px-3 py-2 text-left">Teléfono</th>
                 <th className="px-3 py-2 text-left">Obra social</th>
@@ -167,6 +185,7 @@ export default function EmpresaEmpleadosPage() {
                   <td className="px-3 py-2">{row.first_name || "-"}</td>
                   <td className="px-3 py-2">{row.last_name || "-"}</td>
                   <td className="px-3 py-2">{row.dni || "-"}</td>
+                  <td className="px-3 py-2">{getCreatedDate(row.created_at) || "-"}</td>
                   <td className="px-3 py-2">{row.date_of_birth || "-"}</td>
                   <td className="px-3 py-2">{row.phone || "-"}</td>
                   <td className="px-3 py-2">{row.social_security || "-"}</td>
@@ -202,10 +221,12 @@ export default function EmpresaEmpleadosPage() {
 
               {filteredPatients.length === 0 && (
                 <tr className="border-t border-[#4A4A4A] bg-[#333333] text-white">
-                  <td className="px-3 py-4 text-center" colSpan={isAdmin ? 10 : 9}>
-                    {search
-                      ? `No se encontraron empleados para "${search}".`
-                      : "No hay empleados registrados para esta empresa."}
+                  <td className="px-3 py-4 text-center" colSpan={isAdmin ? 11 : 10}>
+                    {createdDateFilter
+                      ? "No hay empleados dados de alta en esa fecha."
+                      : search
+                        ? `No se encontraron empleados para "${search}".`
+                        : "No hay empleados registrados para esta empresa."}
                   </td>
                 </tr>
               )}
