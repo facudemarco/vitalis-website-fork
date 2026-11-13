@@ -123,6 +123,7 @@ export interface UserPatient {
   company_name?: string | null;
   patient_status?: PatientWorkflowStatus | null;
   is_active?: boolean;
+  created_at?: string | null;
   createdAt?: string;
   updatedAt?: string;
   study_type?: string;
