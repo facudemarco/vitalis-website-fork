@@ -4,6 +4,7 @@ import type {
   UserPatient,
   UserProfessional,
   UserSecretary,
+  PsychotechnicalAppointment,
   PatientWorkflowStatus,
   MedicalRecord,
   Studies,
@@ -25,6 +26,29 @@ interface AddUserForm {
 }
 
 export const dataService = {
+  async getAppointmentPatients(): Promise<UserPatient[]> {
+    const response = await apiClient.get("/appointments/patients", {withCredentials: true});
+    return response.data as UserPatient[];
+  },
+
+  async getAppointments(start: string, end: string): Promise<PsychotechnicalAppointment[]> {
+    const response = await apiClient.get("/appointments", {params: {start, end}, withCredentials: true});
+    return response.data as PsychotechnicalAppointment[];
+  },
+
+  async getAvailableAppointmentSlots(date: string): Promise<string[]> {
+    const response = await apiClient.get("/appointments/available", {params: {date}, withCredentials: true});
+    return response.data.slots as string[];
+  },
+
+  async createAppointment(patient_id: string, date: string, time: string): Promise<void> {
+    await apiClient.post("/appointments", {patient_id, date, time}, {withCredentials: true});
+  },
+
+  async cancelAppointment(appointment_id: string): Promise<void> {
+    await apiClient.delete(`/appointments/${appointment_id}`, {withCredentials: true});
+  },
+
   /**
    * Obtener todos los pacientes del sistema
    */
