@@ -129,6 +129,21 @@ export interface UserPatient {
   study_type?: string;
 }
 
+export interface PsychotechnicalAppointment {
+  id: string;
+  patient_id: string;
+  patient_name: string;
+  dni?: string | number | null;
+  phone?: string | null;
+  email?: string | null;
+  company_id?: string | null;
+  company_name?: string | null;
+  start_at: string;
+  end_at: string;
+  status: "booked" | "cancelled";
+  created_at?: string | null;
+}
+
 export interface UserProfile {
   company_id: string | null;
   patient_id: string | null;
