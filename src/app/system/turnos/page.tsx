@@ -13,11 +13,27 @@ const dateLabel = (value: string) => new Intl.DateTimeFormat("es-AR", {weekday: 
 const timeLabel = (value: string) => value.slice(11, 16);
 const monthTitle = (value: Date) => new Intl.DateTimeFormat("es-AR", {month: "long", year: "numeric"}).format(value);
 const normalizeSearch = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es-AR");
+const serviceWeekdays = [3, 5]; // Date.getDay(): domingo=0, miércoles=3, viernes=5.
+
+function getNextServiceDate() {
+  const now = new Date();
+  for (let offset = 0; offset < 7; offset++) {
+    const candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset);
+    if (serviceWeekdays.includes(candidate.getDay()) && (offset > 0 || now.getHours() < 12)) {
+      return dateKey(candidate);
+    }
+  }
+  return dateKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7));
+}
 
 export default function TurnosPage() {
   const {user, profile} = useAuth();
-  const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-  const [selectedDate, setSelectedDate] = useState(() => dateKey(new Date()));
+  const [initialDate] = useState(() => getNextServiceDate());
+  const [month, setMonth] = useState(() => {
+    const date = new Date(`${initialDate}T12:00:00`);
+    return new Date(date.getFullYear(), date.getMonth(), 1);
+  });
+  const [selectedDate, setSelectedDate] = useState(initialDate);
   const [appointments, setAppointments] = useState<PsychotechnicalAppointment[]>([]);
   const [patients, setPatients] = useState<UserPatient[]>([]);
   const [patientId, setPatientId] = useState("");
@@ -169,7 +185,7 @@ export default function TurnosPage() {
             </div>
             <div className="grid grid-cols-7 overflow-hidden rounded-lg border border-gray-200">
               {days.map((day, index) => {
-                const selectable = Boolean(day) && [2, 4].includes(new Date(`${day}T12:00:00`).getDay());
+                const selectable = Boolean(day) && serviceWeekdays.includes(new Date(`${day}T12:00:00`).getDay());
                 const selected = day === selectedDate;
                 return <button key={`${day ?? "blank"}-${index}`} type="button" disabled={!day} onClick={() => day && setSelectedDate(day)} className={`relative min-h-16 border-b border-r border-gray-200 p-1 text-left sm:min-h-24 sm:p-2 ${!day ? "bg-gray-50" : "bg-white hover:bg-sky-50"} ${selectable ? "" : "text-gray-400"} ${selected ? "z-10 ring-2 ring-inset ring-sky-500" : ""}`}>
                   {day && <><span className={`inline-flex size-7 items-center justify-center rounded-full text-sm ${selected ? "bg-[#64BDEB] font-semibold text-white" : ""}`}>{Number(day.slice(-2))}</span>{selectable && <span className="mt-1 block text-[10px] leading-tight text-gray-500 sm:text-xs">Disponible</span>}{Boolean(appointmentCounts[day]) && <span className="absolute bottom-1 right-1 rounded-full bg-[#64BDEB] px-1.5 text-[10px] font-semibold text-white">{appointmentCounts[day]}</span>}</>}
@@ -209,7 +225,7 @@ export default function TurnosPage() {
               {user?.role === "patient" && <p className="mb-4 rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700">El turno se reservará a tu nombre.</p>}
               {slots.length ? <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                 {slots.map((slot) => <button key={slot} type="button" onClick={() => setSelectedTime(slot)} className={`rounded-lg border px-2 py-2 text-sm ${selectedTime === slot ? "border-[#168EAC] bg-[#168EAC] text-white" : "border-gray-300 bg-white text-gray-800 hover:border-[#168EAC]"}`}><Clock className="mr-1 inline size-3.5" />{slot}</button>)}
-              </div> : <p className="rounded-lg bg-gray-50 px-3 py-3 text-sm text-gray-600">{[2, 4].includes(new Date(`${selectedDate}T12:00:00`).getDay()) ? "No quedan horarios disponibles para esta fecha." : "La atención se realiza los miércoles y viernes."}</p>}
+              </div> : <p className="rounded-lg bg-gray-50 px-3 py-3 text-sm text-gray-600">{serviceWeekdays.includes(new Date(`${selectedDate}T12:00:00`).getDay()) ? "No quedan horarios disponibles para esta fecha." : "La atención se realiza los miércoles y viernes."}</p>}
               <button type="button" disabled={booking || !patientId || !selectedTime} onClick={() => void reserve()} className="mt-4 w-full rounded-lg bg-[#168EAC] px-4 py-2.5 font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50">{booking ? "Reservando…" : "Confirmar turno"}</button>
             </section>}
 
