@@ -12,6 +12,7 @@ const dateKey = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() 
 const dateLabel = (value: string) => new Intl.DateTimeFormat("es-AR", {weekday: "long", day: "numeric", month: "long", year: "numeric"}).format(new Date(`${value}T12:00:00`));
 const timeLabel = (value: string) => value.slice(11, 16);
 const monthTitle = (value: Date) => new Intl.DateTimeFormat("es-AR", {month: "long", year: "numeric"}).format(value);
+const normalizeSearch = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es-AR");
 
 export default function TurnosPage() {
   const {user, profile} = useAuth();
@@ -20,6 +21,8 @@ export default function TurnosPage() {
   const [appointments, setAppointments] = useState<PsychotechnicalAppointment[]>([]);
   const [patients, setPatients] = useState<UserPatient[]>([]);
   const [patientId, setPatientId] = useState("");
+  const [patientSearch, setPatientSearch] = useState("");
+  const [companyFilter, setCompanyFilter] = useState("");
   const [slots, setSlots] = useState<string[]>([]);
   const [selectedTime, setSelectedTime] = useState("");
   const [booking, setBooking] = useState(false);
@@ -83,6 +86,21 @@ export default function TurnosPage() {
   }, [month]);
 
   const selectedAppointments = appointments.filter((appointment) => appointment.start_at.slice(0, 10) === selectedDate);
+  const companies = useMemo(() => {
+    const unique = new Map<string, string>();
+    patients.forEach((patient) => unique.set(patient.company_id ?? "particular", patient.company_name || "Particular"));
+    return Array.from(unique, ([id, name]) => ({id, name})).sort((a, b) => a.name.localeCompare(b.name, "es-AR"));
+  }, [patients]);
+  const filteredPatients = useMemo(() => {
+    const query = normalizeSearch(patientSearch.trim());
+    return patients.filter((patient) => {
+      const fullName = normalizeSearch(`${patient.first_name} ${patient.last_name}`);
+      const reverseName = normalizeSearch(`${patient.last_name} ${patient.first_name}`);
+      const matchesName = !query || fullName.includes(query) || reverseName.includes(query);
+      const matchesCompany = !companyFilter || (patient.company_id ?? "particular") === companyFilter;
+      return matchesName && matchesCompany;
+    });
+  }, [companyFilter, patientSearch, patients]);
   const appointmentCounts = useMemo(() => appointments.reduce<Record<string, number>>((counts, appointment) => {
     if (appointment.status === "booked") {
       const day = appointment.start_at.slice(0, 10);
@@ -165,12 +183,29 @@ export default function TurnosPage() {
             {canBook && <section className="rounded-xl bg-white p-4 shadow-sm sm:p-5">
               <h3 className="mb-1 font-semibold text-gray-900">Reservar turno</h3>
               <p className="mb-4 text-sm capitalize text-gray-600">{dateLabel(selectedDate)}</p>
-              {canChoosePatient && <label className="mb-4 block text-sm font-medium text-gray-700">Paciente / empleado
-                <select className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2" value={patientId} onChange={(event) => setPatientId(event.target.value)}>
-                  <option value="">Seleccionar persona</option>
-                  {patients.map((patient) => <option key={patient.id} value={patient.id}>{patient.last_name}, {patient.first_name} · DNI {patient.dni}{patient.company_name ? ` · ${patient.company_name}` : ""}</option>)}
-                </select>
-              </label>}
+              {canChoosePatient && <div className="mb-4 space-y-3">
+                {(user?.role === "admin" || user?.role === "secretary") && <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="block text-sm font-medium text-gray-700">Buscar por nombre o apellido
+                    <input className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2" placeholder="Ej.: Ana García" type="search" value={patientSearch} onChange={(event) => { setPatientSearch(event.target.value); setPatientId(""); }} />
+                  </label>
+                  <label className="block text-sm font-medium text-gray-700">Empresa
+                    <select className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2" value={companyFilter} onChange={(event) => { setCompanyFilter(event.target.value); setPatientId(""); }}>
+                      <option value="">Todas las empresas</option>
+                      {companies.map((company) => <option key={company.id} value={company.id}>{company.name}</option>)}
+                    </select>
+                  </label>
+                </div>}
+                {user?.role === "company" && <label className="block text-sm font-medium text-gray-700">Buscar empleado por nombre o apellido
+                  <input className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2" placeholder="Ej.: Ana García" type="search" value={patientSearch} onChange={(event) => { setPatientSearch(event.target.value); setPatientId(""); }} />
+                </label>}
+                <label className="block text-sm font-medium text-gray-700">Paciente / empleado
+                  <select className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2" value={patientId} onChange={(event) => setPatientId(event.target.value)}>
+                    <option value="">Seleccionar persona</option>
+                    {filteredPatients.map((patient) => <option key={patient.id} value={patient.id}>{patient.last_name}, {patient.first_name} · DNI {patient.dni}{patient.company_name ? ` · ${patient.company_name}` : ""}</option>)}
+                  </select>
+                </label>
+                {filteredPatients.length === 0 && <p className="text-xs text-gray-500">No hay pacientes que coincidan con esos filtros.</p>}
+              </div>}
               {user?.role === "patient" && <p className="mb-4 rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700">El turno se reservará a tu nombre.</p>}
               {slots.length ? <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                 {slots.map((slot) => <button key={slot} type="button" onClick={() => setSelectedTime(slot)} className={`rounded-lg border px-2 py-2 text-sm ${selectedTime === slot ? "border-[#168EAC] bg-[#168EAC] text-white" : "border-gray-300 bg-white text-gray-800 hover:border-[#168EAC]"}`}><Clock className="mr-1 inline size-3.5" />{slot}</button>)}
