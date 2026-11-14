@@ -8,6 +8,7 @@ import type {Roles} from "@/types";
 
 import {
   Clients,
+  Calendar,
   Estudies,
   Logout,
   Pacientes,
@@ -34,20 +35,24 @@ const navByRole: Record<Roles, NavItem[]> = {
     {label: "Usuarios", href: "/system/usuarios", icon: <Users />},
     {label: "Profesionales", href: "/system/profesionales", icon: <Profesionals />},
     {label: "Estudios", href: "/system/estudios", icon: <Estudies />},
+    {label: "Calendario", href: "/system/turnos", icon: <Calendar />},
     {label: "Soporte", href: "/system/soporte", icon: <Support />},
   ],
   secretary: [
     {label: "Clientes", href: "/system/clientes", icon: <Clients />},
     {label: "Registrar", href: "/system/registro-manual", icon: <Users />},
+    {label: "Calendario", href: "/system/turnos", icon: <Calendar />},
     {label: "Soporte", href: "/system/soporte", icon: <Support />},
   ],
   company: [
     {label: "Empleados", href: "/system/empleados", icon: <Clients />},
+    {label: "Calendario", href: "/system/turnos", icon: <Calendar />},
     {label: "Mis datos", href: "/system/mis-datos-empresa", icon: <Users />},
     {label: "Soporte", href: "/system/soporte-empresa", icon: <Support />},
   ],
   patient: [
     {label: "Mis estudios", href: "/system/estudios-pacientes", icon: <Clients />},
+    {label: "Calendario", href: "/system/turnos", icon: <Calendar />},
     {label: "Mis datos", href: "/system/mis-datos-pacientes", icon: <Users />},
     {label: "Soporte", href: "/system/soporte-pacientes", icon: <Support />},
   ],
