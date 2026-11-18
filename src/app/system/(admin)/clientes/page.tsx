@@ -68,6 +68,8 @@ export default function ClientesAdminPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [search, setSearch] = useState<string>("");
   const [patientStatusFilter, setPatientStatusFilter] = useState<PatientWorkflowStatus | "">("");
+  const [patientCompanyFilter, setPatientCompanyFilter] = useState("");
+  const [patientCreatedDateFilter, setPatientCreatedDateFilter] = useState("");
   const {user} = useAuth();
   const isAdmin = user?.role === "admin";
   const canEdit = isAdmin || user?.role === "secretary";
@@ -106,13 +108,18 @@ export default function ClientesAdminPage() {
     );
   });
 
-  const filteredPatients = patients.filter((p) => {
-    const q = search.toLowerCase();
-    const fullName = `${p.first_name ?? ""} ${p.last_name ?? ""}`.toLowerCase();
-    const matchesSearch = p.first_name?.toLowerCase().includes(q) || p.last_name?.toLowerCase().includes(q) || fullName.includes(q);
-    const matchesStatus = !patientStatusFilter || (p.patient_status ?? "En proceso") === patientStatusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredPatients = patients
+    .filter((p) => {
+      const q = search.trim().toLocaleLowerCase("es-AR");
+      const fullName = `${p.first_name ?? ""} ${p.last_name ?? ""}`.toLocaleLowerCase("es-AR");
+      const reverseName = `${p.last_name ?? ""} ${p.first_name ?? ""}`.toLocaleLowerCase("es-AR");
+      const matchesSearch = !q || fullName.includes(q) || reverseName.includes(q);
+      const matchesStatus = !patientStatusFilter || (p.patient_status ?? "En proceso") === patientStatusFilter;
+      const matchesCompany = !patientCompanyFilter || (p.company_id ?? "particular") === patientCompanyFilter;
+      const matchesCreatedDate = !patientCreatedDateFilter || (p.created_at ?? "").slice(0, 10) === patientCreatedDateFilter;
+      return matchesSearch && matchesStatus && matchesCompany && matchesCreatedDate;
+    })
+    .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
 
   if (loading) {
     return (
@@ -162,6 +169,18 @@ export default function ClientesAdminPage() {
               <option value="En proceso">En proceso</option>
             </select>
           )}
+          {!isEmpresas && (
+            <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              <select className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-black" aria-label="Filtrar pacientes por empresa" value={patientCompanyFilter} onChange={(event) => setPatientCompanyFilter(event.target.value)}>
+                <option value="">Todas las empresas</option>
+                <option value="particular">Particulares</option>
+                {Array.from(new Map(companies.map((company) => [company.id, company.name])).entries()).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+              </select>
+              <label className="flex items-center gap-2 text-sm text-gray-700">Fecha de alta
+                <input className="min-w-0 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-black" aria-label="Filtrar pacientes por fecha de alta" type="date" value={patientCreatedDateFilter} onChange={(event) => setPatientCreatedDateFilter(event.target.value)} />
+              </label>
+            </div>
+          )}
         </div>
 
         {!isEmpresas && canEdit && (
@@ -176,7 +195,7 @@ export default function ClientesAdminPage() {
 
         {/* Tabla */}
         <div className="min-w-0 overflow-x-auto rounded-lg">
-          <table className="w-full table-auto text-xs" style={{minWidth: isEmpresas ? 760 : 1040}}>
+          <table className="w-full table-auto text-xs" style={{minWidth: isEmpresas ? 760 : 1120}}>
             <thead>
               {isEmpresas ? (
                 <tr className="my-2 bg-[#3A3A3A] text-white">
@@ -193,6 +212,7 @@ export default function ClientesAdminPage() {
                   <th className="w-[9%] px-2 py-2 text-left">Nombre</th>
                   <th className="w-[9%] px-2 py-2 text-left">Apellido</th>
                   <th className="w-[7%] px-2 py-2 text-left">DNI</th>
+                  <th className="w-[9%] px-2 py-2 text-left">Fecha de alta</th>
                   <th className="w-[14%] px-2 py-2 text-left">Estado</th>
                   <th className="w-[8%] px-2 py-2 text-left">Teléfono</th>
                   <th className="w-[8%] px-2 py-2 text-left">Obra social</th>
@@ -257,6 +277,7 @@ export default function ClientesAdminPage() {
                       <td className="px-2 py-2 break-words">{row.first_name || "-"}</td>
                       <td className="px-2 py-2 break-words">{row.last_name || "-"}</td>
                       <td className="px-2 py-2 break-words">{row.dni || "-"}</td>
+                      <td className="px-2 py-2 whitespace-nowrap">{row.created_at ? row.created_at.slice(0, 10) : "-"}</td>
                       <td className="px-2 py-2 break-words">
                         {canEdit ? (
                           <select className="rounded border border-gray-500 bg-[#333333] px-2 py-1 text-white" aria-label={`Estado de ${row.first_name ?? ""} ${row.last_name ?? ""}`} value={row.patient_status ?? "En proceso"} onChange={async (event) => {
@@ -364,7 +385,7 @@ export default function ClientesAdminPage() {
               )}
               {!isEmpresas && filteredPatients.length === 0 && (
                 <tr className="border-t border-[#4A4A4A] bg-[#333333] text-white">
-                  <td className="px-3 py-4 text-center" colSpan={canEdit ? 10 : 9}>
+                  <td className="px-3 py-4 text-center" colSpan={canEdit ? 11 : 10}>
                     No se encontraron pacientes{search ? ` para "${search}"` : ""}.
                   </td>
                 </tr>
